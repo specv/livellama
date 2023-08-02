@@ -5,6 +5,7 @@ defmodule LiveLlamaWeb.ChatsLive do
     ~H"""
     <.live_component module={LiveLlamaWeb.ChatsLive.SidebarComponent} id="sidebar" />
     <.live_component module={LiveLlamaWeb.ChatsLive.PromptMessagesComponent} id="prompt_messages" />
+    <.live_component module={LiveLlamaWeb.ChatsLive.PromptInputComponent} id="prompt_input" />
     """
   end
 end
