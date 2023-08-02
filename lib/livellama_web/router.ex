@@ -18,6 +18,10 @@ defmodule LiveLlamaWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live_session :default, layout: false do
+      live "/chats", ChatsLive, :index
+    end
   end
 
   # Other scopes may use custom stacks.
