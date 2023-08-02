@@ -3,9 +3,17 @@ defmodule LiveLlamaWeb.ChatsLive do
 
   def render(assigns) do
     ~H"""
-    <.live_component module={LiveLlamaWeb.ChatsLive.SidebarComponent} id="sidebar" />
-    <.live_component module={LiveLlamaWeb.ChatsLive.PromptMessagesComponent} id="prompt_messages" />
-    <.live_component module={LiveLlamaWeb.ChatsLive.PromptInputComponent} id="prompt_input" />
+    <div class="flex dark:bg-slate-700">
+      <div class="w-64 pr-1">
+        <.live_component module={LiveLlamaWeb.ChatsLive.SidebarComponent} id="sidebar" />
+      </div>
+      <div class="flex-grow">
+        <.live_component
+          module={LiveLlamaWeb.ChatsLive.PromptContainerComponent}
+          id="prompt_container"
+        />
+      </div>
+    </div>
     """
   end
 end
