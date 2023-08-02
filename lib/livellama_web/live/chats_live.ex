@@ -4,6 +4,7 @@ defmodule LiveLlamaWeb.ChatsLive do
   def render(assigns) do
     ~H"""
     <.live_component module={LiveLlamaWeb.ChatsLive.SidebarComponent} id="sidebar" />
+    <.live_component module={LiveLlamaWeb.ChatsLive.PromptMessagesComponent} id="prompt_messages" />
     """
   end
 end
