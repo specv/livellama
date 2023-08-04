@@ -7,7 +7,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       <!-- Prompt Messages Container - Modify the height according to your need -->
       <div class="flex h-[100vh] w-full flex-col">
         <!-- Prompt Messages -->
-        <div class="flex-1 space-y-6 overflow-y-auto rounded-lg bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
+        <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
           <div class="flex items-start">
             <img
               class="mr-2 h-8 w-8 rounded-full"
@@ -162,7 +162,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           </div>
         </div>
         <!-- Prompt message input -->
-        <form class="mt-2">
+        <form class="border-t border-slate-300 dark:border-slate-700">
           <label for="chat-input" class="sr-only">Enter your prompt</label>
           <div class="relative">
             <button
@@ -191,12 +191,11 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
             </button>
             <textarea
               id="chat-input"
-              class="block w-full resize-none rounded-lg border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
+              class="block w-full resize-none border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
               placeholder="Enter your prompt"
               rows="1"
               required
-            >
-            </textarea>
+            ></textarea>
             <button
               type="submit"
               class="absolute bottom-2 right-2.5 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:text-base"
