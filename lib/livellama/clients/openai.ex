@@ -6,7 +6,7 @@ defmodule LiveLlama.OpenAI do
       doc: "ID of the model to use."
     ],
     messages: [
-      type: {:list, :map},
+      type: {:list, {:map, :string, :string}},
       required: true,
       doc: "A list of messages comprising the conversation so far."
     ],
@@ -39,6 +39,10 @@ defmodule LiveLlama.OpenAI do
       We generally recommend altering this or `temperature` but not both.
       """
     ],
+    api_key: [
+      type: :string,
+      required: true
+    ]
   ]
   @doc "Supported options:\n#{NimbleOptions.docs(@opts)}"
   def chat_completion(opts) do
