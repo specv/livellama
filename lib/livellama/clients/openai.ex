@@ -45,7 +45,81 @@ defmodule LiveLlama.OpenAI do
     ]
   ]
   @doc "Supported options:\n#{NimbleOptions.docs(@opts)}"
-  def chat_completion(opts) do
-    NimbleOptions.validate!(opts, @opts)
+  def chat_completions(opts) do
+    opts = NimbleOptions.validate!(opts, @opts)
+    request = build_request(opts)
+
+    if opts[:stream] do
+      stream_response!(request)
+    else
+      response!(request)
+    end
+  end
+
+  defp parse_chunk(chunk) do
+    chunk
+    |> String.split("\n\n")
+    |> Enum.map(fn
+      "" -> nil
+      "data: [DONE]" -> nil
+      "data: " <> json -> Jason.decode!(json)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp stream_request!(request, stream_to, ref) do
+    Req.request!(request, finch_request: fn request, finch_request, finch_name, finch_options ->
+      on_chunk = fn chunk, response ->
+        send(stream_to, {ref, chunk})
+        response
+      end
+
+      case Finch.stream(finch_request, finch_name, Req.Response.new(), on_chunk, finch_options) do
+        {:ok, response} -> {request, response}
+        {:error, exception} -> {request, exception}
+      end
+    end)
+
+    send(stream_to, {ref, :done})
+  end
+
+  defp stream_response!(request) do
+    {stream_to, ref} = {self(), make_ref()}
+    task = Task.async(fn -> stream_request!(request, stream_to, ref) end)
+    Req.Response.new(
+      status: receive do
+        {^ref, {:status, status}} -> status
+      end,
+      hedaers: receive do
+        {^ref, {:headers, headers}} -> headers
+      end,
+      body: Stream.resource(
+        fn -> {ref, task} end,
+        fn {ref, task} ->
+          receive do
+            {^ref, {:data, chunk}} -> {parse_chunk(chunk), {ref, task}}
+            {^ref, :done} -> {:halt, {ref, task}}
+          end
+        end,
+        fn {_ref, task} -> Task.shutdown(task) end
+      )
+    )
+  end
+
+  defp response!(request) do
+    Req.request!(request)
+  end
+
+  defp build_request(opts) do
+    Req.new(
+      url: "https://api.openai.com/v1/chat/completions",
+      method: :post,
+      json: %{
+        model: opts[:model],
+        messages: opts[:messages],
+        stream: opts[:stream],
+      },
+      auth: {:bearer, opts[:api_key]}
+    )
   end
 end
