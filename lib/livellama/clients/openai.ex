@@ -10,7 +10,7 @@ defmodule LiveLlama.OpenAI do
             required: true,
             doc: "A list of messages comprising the conversation so far."
           ],
-          stream: [
+          stream?: [
             type: :boolean,
             default: true,
             doc: """
@@ -45,15 +45,17 @@ defmodule LiveLlama.OpenAI do
           ]
         )
   @doc "Supported options:\n#{NimbleOptions.docs(@opts)}"
-  def chat_completions(opts) do
-    opts = NimbleOptions.validate!(opts, @opts)
-    request = build_request(opts)
+  def chat_completions!(opts) do
+    opts
+    |> NimbleOptions.validate!(@opts)
+    |> build_request()
+    |> then(fn
+      %Req.Request{options: %{json: %{stream: false}}} = req ->
+        response!(req)
 
-    if opts[:stream] do
-      stream_response!(request)
-    else
-      response!(request)
-    end
+      %Req.Request{options: %{json: %{stream: true}}} = req ->
+        stream_response!(req)
+    end)
   end
 
   defp parse_chunk(chunk) do
@@ -123,7 +125,7 @@ defmodule LiveLlama.OpenAI do
       json: %{
         model: opts[:model],
         messages: opts[:messages],
-        stream: opts[:stream]
+        stream: opts[:stream?]
       },
       auth: {:bearer, opts[:api_key]}
     )
