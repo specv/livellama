@@ -103,10 +103,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
               src="https://dummyimage.com/128x128/354ea1/ffffff&text=G"
             />
             <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl">
-              <p>
-                Three great applications of quantum computing are: Optimization of
-                complex problems, Drug Discovery and Cryptography.
-              </p>
+              <p><%= @chunks %></p>
             </div>
             <div class="mr-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
               <button class="hover:text-blue-600" type="button">
@@ -207,5 +204,40 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       </div>
     </div>
     """
+  end
+
+  def update(%{chunk: chunk}, socket) do
+    {:ok, update(socket, :chunks, &(&1 <> chunk))}
+  end
+
+  def update(assigns, socket) do
+    socket = assign(socket, chunks: "")
+
+    if connected?(socket) do
+      myself = self()
+
+      # Task.async
+      spawn(fn ->
+        LiveLlama.LLMs.OpenAI.chat(
+          "gpt-3.5-turbo-0301",
+          [
+            %{
+              "role" => "system",
+              "content" =>
+                "You are a chatbot that only answers questions about the programming language Elixir."
+            },
+            %{"role" => "user", "content" => "Hi, Please generate a sentence about elixir."},
+          ],
+          System.fetch_env!("OPENAI_API_KEY")
+        )
+        |> Stream.map(fn chunk ->
+          :timer.sleep(50)
+          send_update(myself, __MODULE__, id: assigns.id, chunk: chunk)
+        end)
+        |> Stream.run()
+      end)
+    end
+
+    {:ok, socket}
   end
 end
