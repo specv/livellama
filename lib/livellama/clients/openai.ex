@@ -1,4 +1,4 @@
-defmodule LiveLlama.OpenAI do
+defmodule LiveLlama.Clients.OpenAI do
   @opts NimbleOptions.new!(
           model: [
             type: :string,
@@ -89,7 +89,7 @@ defmodule LiveLlama.OpenAI do
 
   defp stream_response!(request) do
     {stream_to, ref} = {self(), make_ref()}
-    task = Task.async(fn -> stream_request!(request, stream_to, ref) end)
+    request_task = Task.async(fn -> stream_request!(request, stream_to, ref) end)
 
     Req.Response.new(
       status:
@@ -102,14 +102,14 @@ defmodule LiveLlama.OpenAI do
         end,
       body:
         Stream.resource(
-          fn -> {ref, task} end,
-          fn {ref, task} ->
+          fn -> [] end,
+          fn [] ->
             receive do
-              {^ref, {:data, chunk}} -> {parse_chunk(chunk), {ref, task}}
-              {^ref, :done} -> {:halt, {ref, task}}
+              {^ref, {:data, chunk}} -> {parse_chunk(chunk), []}
+              {^ref, :done} -> {:halt, []}
             end
           end,
-          fn {_ref, task} -> Task.shutdown(task) end
+          fn [] -> Task.shutdown(request_task) end
         )
     )
   end
