@@ -11,4 +11,26 @@ defmodule LiveLlama.LLMs.OpenAI do
       Map.get(delta, "content", "")
     end)
   end
+
+  def user_message(messages, message) do
+    messages ++
+      [
+        %{
+          "role" => "user",
+          "content" => message
+        },
+        %{
+          "role" => "assistant",
+          "content" => ""
+        }
+      ]
+  end
+
+  def assistant_message(messages, chunk) do
+    List.update_at(
+      messages,
+      -1,
+      fn m -> Map.update!(m, "content", &(&1 <> chunk)) end
+    )
+  end
 end

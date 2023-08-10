@@ -1,5 +1,6 @@
 defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   use LiveLlamaWeb, :live_component
+  alias LiveLlama.LLMs.OpenAI
 
   def render(assigns) do
     ~H"""
@@ -19,13 +20,13 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           <% end %>
         </div>
         <!-- Prompt message input -->
-        <.chat_input myself={@myself} />
+        <.input_message myself={@myself} />
       </div>
     </div>
     """
   end
 
-  def user_message(assigns) do
+  defp user_message(assigns) do
     ~H"""
     <div class="flex items-start">
       <img
@@ -39,7 +40,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     """
   end
 
-  def assistant_message(assigns) do
+  defp assistant_message(assigns) do
     ~H"""
     <div class="flex flex-row-reverse items-start">
       <img
@@ -105,14 +106,14 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     """
   end
 
-  def chat_input(assigns) do
+  defp input_message(assigns) do
     ~H"""
     <form
       class="border-t border-slate-300 dark:border-slate-700"
       phx-submit="submit"
       phx-target={@myself}
     >
-      <label for="chat-input" class="sr-only">Enter your prompt</label>
+      <label for="input-message" class="sr-only">Enter your prompt</label>
       <div class="relative">
         <button
           type="button"
@@ -139,8 +140,8 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           <span class="sr-only">Use voice input</span>
         </button>
         <textarea
-          id="chat-input"
-          name="chat-input"
+          id="input-message"
+          name="input-message"
           class="block w-full resize-none border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
           placeholder="Enter your prompt"
           rows="1"
@@ -179,26 +180,13 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
      )}
   end
 
-  def handle_event("submit", %{"chat-input" => message}, socket) do
-    socket =
-      update(socket, :messages, fn messages ->
-        messages ++
-          [
-            %{
-              "role" => "user",
-              "content" => message
-            },
-            %{
-              "role" => "assistant",
-              "content" => ""
-            }
-          ]
-      end)
+  def handle_event("submit", %{"input-message" => message}, socket) do
+    socket = update(socket, :messages, &OpenAI.user_message(&1, message))
 
     myself = self()
     # Task.async
     spawn(fn ->
-      LiveLlama.LLMs.OpenAI.chat(
+      OpenAI.chat(
         "gpt-3.5-turbo-0301",
         socket.assigns.messages,
         System.fetch_env!("OPENAI_API_KEY")
@@ -214,15 +202,10 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   end
 
   def update(%{chunk: chunk}, socket) do
-    {:ok,
-     update(socket, :messages, fn messages ->
-       List.update_at(messages, -1, fn message ->
-         %{message | "content" => message["content"] <> chunk}
-       end)
-     end)}
+    {:ok, update(socket, :messages, &OpenAI.assistant_message(&1, chunk))}
   end
 
   def update(assigns, socket) do
-    {:ok, Enum.reduce(assigns, socket, fn {k, v}, acc -> assign(acc, k, v) end)}
+    {:ok, assign(socket, assigns)}
   end
 end
