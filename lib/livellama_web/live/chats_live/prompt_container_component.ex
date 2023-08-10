@@ -52,55 +52,9 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         <p><%= @message %></p>
       </div>
       <div class="mr-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
-        <button class="hover:text-blue-600" type="button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z">
-            </path>
-            <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
-          </svg>
-        </button>
-        <button class="hover:text-blue-600" type="button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <path d="M7 13v-8a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2 -2l-1 -5a2 3 0 0 0 -2 -2h-7a3 3 0 0 0 -3 3">
-            </path>
-          </svg>
-        </button>
-        <button class="hover:text-blue-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <path d="M7 11v8a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1h3a4 4 0 0 0 4 -4v-1a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1 -2 2h-7a3 3 0 0 1 -3 -3">
-            </path>
-          </svg>
-        </button>
+        <.icon_copy />
+        <.icon_thumbs_down />
+        <.icon_thumbs_up />
       </div>
     </div>
     """
@@ -115,30 +69,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     >
       <label for="input-message" class="sr-only">Enter your prompt</label>
       <div class="relative">
-        <button
-          type="button"
-          class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-600"
-        >
-          <svg
-            aria-hidden="true"
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke-width="2"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z">
-            </path>
-            <path d="M5 10a7 7 0 0 0 14 0"></path>
-            <path d="M8 21l8 0"></path>
-            <path d="M12 17l0 4"></path>
-          </svg>
-          <span class="sr-only">Use voice input</span>
-        </button>
+        <.icon_voice />
         <textarea
           id="input-message"
           name="input-message"
@@ -155,6 +86,97 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         </button>
       </div>
     </form>
+    """
+  end
+
+  defp icon_copy(assigns) do
+    ~H"""
+    <button class="hover:text-blue-600" type="button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M8 8m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"></path>
+        <path d="M16 8v-2a2 2 0 0 0 -2 -2h-8a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h2"></path>
+      </svg>
+    </button>
+    """
+  end
+
+  defp icon_thumbs_up(assigns) do
+    ~H"""
+    <button class="hover:text-blue-600">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M7 11v8a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1h3a4 4 0 0 0 4 -4v-1a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1 -2 2h-7a3 3 0 0 1 -3 -3">
+        </path>
+      </svg>
+    </button>
+    """
+  end
+
+  defp icon_thumbs_down(assigns) do
+    ~H"""
+    <button class="hover:text-blue-600" type="button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M7 13v-8a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2 -2l-1 -5a2 3 0 0 0 -2 -2h-7a3 3 0 0 0 -3 3">
+        </path>
+      </svg>
+    </button>
+    """
+  end
+
+  defp icon_voice(assigns) do
+    ~H"""
+    <button
+      type="button"
+      class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-600"
+    >
+      <svg
+        aria-hidden="true"
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        stroke-width="2"
+        stroke="currentColor"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"></path>
+        <path d="M5 10a7 7 0 0 0 14 0"></path>
+        <path d="M8 21l8 0"></path>
+        <path d="M12 17l0 4"></path>
+      </svg>
+      <span class="sr-only">Use voice input</span>
+    </button>
     """
   end
 
