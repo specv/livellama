@@ -28,12 +28,12 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
 
   defp user_message(assigns) do
     ~H"""
-    <div class="flex items-start">
+    <div class="flex flex-row-reverse items-start">
       <img
-        class="mr-2 h-8 w-8 rounded-full"
+        class="ml-2 h-8 w-8 rounded-full"
         src="https://dummyimage.com/128x128/363536/ffffff&text=J"
       />
-      <div class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
+      <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl">
         <p><%= @message %></p>
       </div>
     </div>
@@ -42,19 +42,19 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
 
   defp assistant_message(assigns) do
     ~H"""
-    <div class="flex flex-row-reverse items-start">
+    <div class="flex items-start">
       <img
-        class="ml-2 h-8 w-8 rounded-full"
+        class="mr-2 h-8 w-8 rounded-full"
         src="https://dummyimage.com/128x128/354ea1/ffffff&text=G"
       />
 
-      <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl">
+      <div class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
         <p><%= @message %></p>
       </div>
-      <div class="mr-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
-        <.icon_copy />
-        <.icon_thumbs_down />
+      <div class="ml-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
         <.icon_thumbs_up />
+        <.icon_thumbs_down />
+        <.icon_copy />
       </div>
     </div>
     """
