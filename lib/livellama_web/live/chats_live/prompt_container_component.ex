@@ -33,7 +33,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         class="ml-2 h-8 w-8 rounded-full"
         src="https://dummyimage.com/128x128/363536/ffffff&text=J"
       />
-      <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl">
+      <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl whitespace-pre-wrap break-words overflow-x-auto">
         <p><%= @message %></p>
       </div>
     </div>
