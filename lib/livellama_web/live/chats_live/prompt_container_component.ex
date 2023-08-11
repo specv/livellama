@@ -8,15 +8,10 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     <div class="flex h-[100vh] w-full flex-col">
       <%!-- Prompt Messages --%>
       <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
-        <%= for msg <- @messages, msg["content"] != "" do %>
-          <%= case msg["role"] do %>
-            <% "user" -> %>
-              <.user_message message={msg["content"]} />
-            <% "assistant" -> %>
-              <.assistant_message message={msg["content"]} />
-            <% _ -> %>
-          <% end %>
-        <% end %>
+        <div :for={msg <- @messages} :if={msg["content"] != ""}>
+          <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
+          <.assistant_message :if={msg["role"] == "assistant"} message={msg["content"]} />
+        </div>
       </div>
       <%!-- Prompt message input --%>
       <.input_message myself={@myself} />
