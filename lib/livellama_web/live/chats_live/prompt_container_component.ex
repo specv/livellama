@@ -8,7 +8,11 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     <div class="flex h-[100vh] w-full flex-col">
       <%!-- Prompt Messages --%>
       <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
-        <div :for={msg <- @messages} :if={msg["content"] != ""}>
+        <div
+          :for={msg <- @messages}
+          :if={msg["content"] != ""}
+          phx-mounted={JS.dispatch("scroll-to-bottom")}
+        >
           <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
           <.assistant_message :if={msg["role"] == "assistant"} message={msg["content"]} />
         </div>
