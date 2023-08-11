@@ -4,24 +4,22 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
 
   def render(assigns) do
     ~H"""
-    <div>
-      <!-- Prompt Messages Container - Modify the height according to your need -->
-      <div class="flex h-[100vh] w-full flex-col">
-        <!-- Prompt Messages -->
-        <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
-          <%= for msg <- @messages, msg["content"] != "" do %>
-            <%= case msg["role"] do %>
-              <% "user" -> %>
-                <.user_message message={msg["content"]} />
-              <% "assistant" -> %>
-                <.assistant_message message={msg["content"]} />
-              <% _ -> %>
-            <% end %>
+    <%!-- Prompt Messages Container - Modify the height according to your need --%>
+    <div class="flex h-[100vh] w-full flex-col">
+      <%!-- Prompt Messages --%>
+      <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
+        <%= for msg <- @messages, msg["content"] != "" do %>
+          <%= case msg["role"] do %>
+            <% "user" -> %>
+              <.user_message message={msg["content"]} />
+            <% "assistant" -> %>
+              <.assistant_message message={msg["content"]} />
+            <% _ -> %>
           <% end %>
-        </div>
-        <!-- Prompt message input -->
-        <.input_message myself={@myself} />
+        <% end %>
       </div>
+      <%!-- Prompt message input --%>
+      <.input_message myself={@myself} />
     </div>
     """
   end
