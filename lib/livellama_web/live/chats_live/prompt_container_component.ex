@@ -7,11 +7,11 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     <%!-- Prompt Messages Container - Modify the height according to your need --%>
     <div class="flex h-[100vh] w-full flex-col">
       <%!-- Prompt Messages --%>
-      <div class="flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
+      <div class="messages flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
         <div
           :for={msg <- @messages}
-          :if={msg["content"] != ""}
-          phx-mounted={JS.dispatch("scroll-to-bottom")}
+          :if={msg["role"] != "system"}
+          phx-mounted={JS.dispatch("scroll-into-view")}
         >
           <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
           <.assistant_message :if={msg["role"] == "assistant"} message={msg["content"]} />
@@ -212,16 +212,22 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       )
       |> Stream.map(fn chunk ->
         :timer.sleep(50)
-        send_update(myself, __MODULE__, id: socket.assigns.id, chunk: chunk)
+        send_update(myself, __MODULE__, id: socket.assigns.id, streaming: chunk)
+        chunk
       end)
-      |> Stream.run()
+      |> Enum.join()
+      |> then(&send_update(myself, __MODULE__, id: socket.assigns.id, finished: &1))
     end)
 
     {:noreply, socket}
   end
 
-  def update(%{chunk: chunk}, socket) do
-    {:ok, update(socket, :messages, &OpenAI.assistant_message(&1, chunk))}
+  def update(%{streaming: chunk}, socket) do
+    {:ok, Phoenix.LiveView.push_event(socket, "streaming-chunk-received", %{"chunk" => chunk})}
+  end
+
+  def update(%{finished: message}, socket) do
+    {:ok, update(socket, :messages, &OpenAI.assistant_message(&1, message))}
   end
 
   def update(assigns, socket) do
