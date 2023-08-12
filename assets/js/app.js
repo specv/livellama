@@ -22,8 +22,9 @@ import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+let Hooks = {}
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken } })
+let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: { _csrf_token: csrfToken } })
 
 // Show progress bar on live navigation and form submits
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
@@ -38,6 +39,21 @@ window.addEventListener("phx:streaming-chunk-received", event => {
     if (atBottom) container.scrollTop = container.scrollHeight
 })
 window.addEventListener("scroll-to-bottom", event => event.target.scrollTop = event.target.scrollHeight)
+
+Hooks.EnterSubmit = {
+    mounted() {
+        this.el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                if (this.el.nextElementSibling.disabled) {
+                    e.preventDefault()
+                }
+                else {
+                    this.el.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                }
+            }
+        })
+    }
+}
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
