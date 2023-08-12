@@ -63,7 +63,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   defp input_message(assigns) do
     ~H"""
     <form
-      class="border-t border-slate-300 dark:border-slate-700"
+      class="input-message-form border-t border-slate-300 dark:border-slate-700"
       phx-submit="submit"
       phx-target={@myself}
     >
@@ -73,6 +73,8 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         <textarea
           id="input-message"
           name="input-message"
+          phx-key="Enter"
+          phx-keydown={JS.dispatch("submit", to: ".input-message-form")}
           class="block w-full resize-none border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
           placeholder="Enter your prompt"
           rows="1"
