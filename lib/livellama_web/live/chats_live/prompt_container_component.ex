@@ -11,7 +11,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         <div
           :for={msg <- @messages}
           :if={msg["role"] != "system"}
-          phx-mounted={JS.dispatch("scroll-into-view")}
+          phx-mounted={JS.dispatch("scroll-to-bottom", to: ".messages")}
         >
           <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
           <.assistant_message
@@ -30,10 +30,9 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   defp user_message(assigns) do
     ~H"""
     <div class="flex flex-row-reverse items-start">
-      <img
-        class="ml-2 h-8 w-8 rounded-full"
-        src="https://dummyimage.com/128x128/363536/ffffff&text=J"
-      />
+      <div class="flex-shrink-0 ml-2 h-8 w-8">
+        <img class="rounded-full" src="https://dummyimage.com/128x128/363536/ffffff&text=J" />
+      </div>
       <div class="flex min-h-[85px] rounded-b-xl rounded-tl-xl bg-slate-50 p-4 dark:bg-slate-800 sm:min-h-0 sm:max-w-md md:max-w-2xl whitespace-pre-wrap break-words overflow-x-auto">
         <p><%= @message %></p>
       </div>
@@ -44,10 +43,9 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   defp assistant_message(assigns) do
     ~H"""
     <div class="flex items-start">
-      <img
-        class="mr-2 h-8 w-8 rounded-full"
-        src="https://dummyimage.com/128x128/354ea1/ffffff&text=G"
-      />
+      <div class="flex-shrink-0 mr-2 h-8 w-8 ">
+        <img class="rounded-full" src="https://dummyimage.com/128x128/354ea1/ffffff&text=G" />
+      </div>
 
       <div class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
         <.loading show={@status == :waiting and @message == ""} />

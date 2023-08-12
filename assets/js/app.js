@@ -37,7 +37,7 @@ window.addEventListener("phx:streaming-chunk-received", event => {
     lastMessage.textContent += event.detail.chunk
     if (atBottom) container.scrollTop = container.scrollHeight
 })
-window.addEventListener("scroll-into-view", event => event.target.scrollIntoView())
+window.addEventListener("scroll-to-bottom", event => event.target.scrollTop = event.target.scrollHeight)
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
