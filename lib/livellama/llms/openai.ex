@@ -7,9 +7,12 @@ defmodule LiveLlama.LLMs.OpenAI do
       stream?: true
     )
     |> Map.get(:body)
-    |> Stream.map(fn %{"choices" => [%{"delta" => delta}]} ->
-      Map.get(delta, "content", "")
+    |> Stream.map(fn
+      %{"choices" => [%{"delta" => %{"role" => "assistant"}}]} -> nil
+      %{"choices" => [%{"finish_reason" => "stop"}]} -> nil
+      %{"choices" => [%{"delta" => delta}]} -> Map.get(delta, "content")
     end)
+    |> Stream.reject(&is_nil(&1))
   end
 
   def user_message(messages, message) do

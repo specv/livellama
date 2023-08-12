@@ -14,11 +14,15 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           phx-mounted={JS.dispatch("scroll-into-view")}
         >
           <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
-          <.assistant_message :if={msg["role"] == "assistant"} message={msg["content"]} />
+          <.assistant_message
+            :if={msg["role"] == "assistant"}
+            message={msg["content"]}
+            status={@status}
+          />
         </div>
       </div>
       <%!-- Prompt message input --%>
-      <.input_message myself={@myself} />
+      <.input_message myself={@myself} status={@status} />
     </div>
     """
   end
@@ -46,6 +50,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       />
 
       <div class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
+        <.loading show={@status == :waiting and @message == ""} />
         <p><%= @message %></p>
       </div>
       <div class="ml-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
@@ -77,12 +82,28 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         />
         <button
           type="submit"
-          class="absolute bottom-2 right-2.5 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:text-base"
+          class="absolute bottom-2 right-2.5 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 sm:text-base disabled:opacity-50 disabled:pointer-events-none"
+          disabled={@status != :finished}
         >
           Send <span class="sr-only">Send message</span>
         </button>
       </div>
     </form>
+    """
+  end
+
+  defp loading(assigns) do
+    ~H"""
+    <div
+      class={[@show or "hidden", "flex min-h-[28px] justify-center items-center"]}
+      aria-hidden="true"
+    >
+      <div class="flex animate-pulse space-x-2">
+        <div class="h-2 w-2 rounded-full bg-slate-600"></div>
+        <div class="h-2 w-2 rounded-full bg-slate-600"></div>
+        <div class="h-2 w-2 rounded-full bg-slate-600"></div>
+      </div>
+    </div>
     """
   end
 
@@ -180,22 +201,8 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   def mount(socket) do
     {:ok,
      assign(socket,
-       messages: [
-         %{
-           "role" => "system",
-           "content" =>
-             "You are a chatbot that only answers questions about the programming language Elixir."
-         },
-         %{
-           "role" => "user",
-           "content" => "Hi. Please generate an sentence about elixir"
-         },
-         %{
-           "role" => "assistant",
-           "content" =>
-             "Sure, here's a sentence: Elixir is a functional programming language built on top of the Erlang VM, designed for building scalable and maintainable applications."
-         }
-       ]
+       status: :finished,
+       messages: []
      )}
   end
 
@@ -219,15 +226,21 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       |> then(&send_update(myself, __MODULE__, id: socket.assigns.id, finished: &1))
     end)
 
-    {:noreply, socket}
+    {:noreply, assign(socket, status: :waiting)}
   end
 
   def update(%{streaming: chunk}, socket) do
-    {:ok, Phoenix.LiveView.push_event(socket, "streaming-chunk-received", %{"chunk" => chunk})}
+    {:ok,
+     socket
+     |> assign(status: :streaming)
+     |> Phoenix.LiveView.push_event("streaming-chunk-received", %{"chunk" => chunk})}
   end
 
   def update(%{finished: message}, socket) do
-    {:ok, update(socket, :messages, &OpenAI.assistant_message(&1, message))}
+    {:ok,
+     socket
+     |> assign(status: :finished)
+     |> update(:messages, &OpenAI.assistant_message(&1, message))}
   end
 
   def update(assigns, socket) do
