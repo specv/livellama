@@ -31,28 +31,28 @@ topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 window.addEventListener("phx:streaming-chunk-received", event => {
-    let container = document.querySelector('.messages');
-    let lastMessage = document.querySelector(".messages > div:last-child p")
-    let atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight
+  let container = document.querySelector('.messages');
+  let lastMessage = document.querySelector(".messages > div:last-child p")
+  let atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight
 
-    lastMessage.textContent += event.detail.chunk
-    if (atBottom) container.scrollTop = container.scrollHeight
+  lastMessage.textContent += event.detail.chunk
+  if (atBottom) container.scrollTop = container.scrollHeight
 })
 window.addEventListener("scroll-to-bottom", event => event.target.scrollTop = event.target.scrollHeight)
 
 Hooks.EnterSubmit = {
-    mounted() {
-        this.el.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                if (this.el.nextElementSibling.disabled) {
-                    e.preventDefault()
-                }
-                else {
-                    this.el.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                }
-            }
-        })
-    }
+  mounted() {
+    this.el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        if (this.el.nextElementSibling.disabled) {
+          e.preventDefault()
+        }
+        else {
+          this.el.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+    })
+  }
 }
 
 // connect if there are any LiveViews on the page
@@ -63,4 +63,3 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-
