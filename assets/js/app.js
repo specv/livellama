@@ -30,27 +30,35 @@ let liveSocket = new LiveSocket("/live", Socket, { hooks: Hooks, params: { _csrf
 topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
-window.addEventListener("phx:streaming-chunk-received", event => {
+window.addEventListener("phx:streaming-chunk-received", e => {
   let container = document.querySelector('.messages');
   let lastMessage = document.querySelector(".messages > div:last-child p")
   let atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight
 
-  lastMessage.textContent += event.detail.chunk
+  lastMessage.textContent += e.detail.chunk
   if (atBottom) container.scrollTop = container.scrollHeight
 })
-window.addEventListener("scroll-to-bottom", event => event.target.scrollTop = event.target.scrollHeight)
+window.addEventListener("scroll-to-bottom", e => e.target.scrollTop = e.target.scrollHeight)
 
 Hooks.EnterSubmit = {
   mounted() {
     this.el.addEventListener("keydown", (e) => {
+      // Submit form on Enter press (without Shift)
       if (e.key === "Enter" && !e.shiftKey) {
-        if (this.el.nextElementSibling.disabled) {
-          e.preventDefault()
-        }
-        else {
-          this.el.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-        }
+        // Click submit button
+        this.el.nextElementSibling.click()
+        e.preventDefault()
       }
+      // Prevent whitespace only input
+      else if ([" ", "Enter"].includes(e.key) && this.el.value.trim() === "") {
+        this.el.value = ""
+        e.preventDefault()
+      }
+    })
+
+    this.el.addEventListener("paste", (e) => {
+      // Prevent whitespace only paste
+      if (e.clipboardData.getData('text').trim() === "") e.preventDefault()
     })
   }
 }
