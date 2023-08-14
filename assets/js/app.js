@@ -32,10 +32,12 @@ window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 window.addEventListener("phx:streaming-chunk-received", e => {
   let container = document.querySelector('.messages');
-  let lastMessage = document.querySelector(".messages > div:last-child p")
+  let lastSuccessMessage = document.querySelector(".messages > div:last-child .success-message")
+  let lastErrorMessage = document.querySelector(".messages > div:last-child .error-message")
   let atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight
 
-  lastMessage.textContent += e.detail.chunk
+  lastSuccessMessage.textContent += e.detail.chunk || ""
+  lastErrorMessage.textContent += e.detail.error || ""
   if (atBottom) container.scrollTop = container.scrollHeight
 })
 window.addEventListener("scroll-to-bottom", e => e.target.scrollTop = e.target.scrollHeight)
@@ -52,7 +54,7 @@ Hooks.EnterSubmit = {
     })
 
     // Prevent form submission when typed content consists only of whitespace
-    this.el.addEventListener("keyup", e => {
+    this.el.addEventListener("keyup", _e => {
       if (this.el.value.trim() === "") {
         this.el.setCustomValidity(" ")
       }

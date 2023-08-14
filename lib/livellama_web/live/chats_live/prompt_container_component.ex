@@ -17,6 +17,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           <.assistant_message
             :if={msg["role"] == "assistant"}
             message={msg["content"]}
+            error={msg["error"]}
             status={@status}
           />
         </div>
@@ -47,9 +48,14 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         <img class="rounded-full" src="https://dummyimage.com/128x128/354ea1/ffffff&text=G" />
       </div>
 
-      <div class="flex rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
-        <.loading show={@status == :waiting and @message == ""} />
-        <p><%= @message %></p>
+      <div class="rounded-b-xl rounded-tr-xl bg-slate-50 p-4 dark:bg-slate-800 sm:max-w-md md:max-w-2xl">
+        <.loading show={@status == :waiting and @message == "" and @error == ""} />
+        <div>
+          <p class="success-message"><%= @message %></p>
+        </div>
+        <div>
+          <p class="error-message text-red-600"><%= @error %></p>
+        </div>
       </div>
       <div class="ml-2 mt-1 flex flex-col-reverse gap-2 text-slate-500 sm:flex-row">
         <.icon_thumbs_up />
@@ -205,6 +211,8 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
     {:ok,
      assign(socket,
        status: :finished,
+       streaming_msg: "",
+       streaming_error: "",
        messages: []
      )}
   end
@@ -220,30 +228,45 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         socket.assigns.messages,
         System.fetch_env!("OPENAI_API_KEY")
       )
-      |> Stream.map(fn chunk ->
+      |> Stream.map(fn part ->
+        send_update(myself, __MODULE__, id: socket.assigns.id, streaming: part)
         :timer.sleep(50)
-        send_update(myself, __MODULE__, id: socket.assigns.id, streaming: chunk)
-        chunk
       end)
-      |> Enum.join()
-      |> then(&send_update(myself, __MODULE__, id: socket.assigns.id, finished: &1))
+      |> Stream.run()
+
+      send_update(myself, __MODULE__, id: socket.assigns.id, finished: true)
     end)
 
     {:noreply, assign(socket, status: :waiting)}
   end
 
-  def update(%{streaming: chunk}, socket) do
+  def update(%{streaming: {:ok, chunk}}, socket) do
     {:ok,
      socket
      |> assign(status: :streaming)
-     |> Phoenix.LiveView.push_event("streaming-chunk-received", %{"chunk" => chunk})}
+     |> update(:streaming_msg, fn msg -> msg <> chunk end)
+     |> Phoenix.LiveView.push_event("streaming-chunk-received", %{chunk: chunk})}
   end
 
-  def update(%{finished: message}, socket) do
+  def update(%{streaming: {:error, error}}, socket) do
     {:ok,
      socket
-     |> assign(status: :finished)
-     |> update(:messages, &OpenAI.assistant_message(&1, message))}
+     |> assign(status: :streaming, streaming_error: error)
+     |> Phoenix.LiveView.push_event("streaming-chunk-received", %{error: error})}
+  end
+
+  def update(%{finished: true}, socket) do
+    {:ok,
+     socket
+     |> assign(status: :finished, streaming_msg: "", streaming_error: "")
+     |> update(
+       :messages,
+       &OpenAI.assistant_message(
+         &1,
+         socket.assigns.streaming_msg,
+         socket.assigns.streaming_error
+       )
+     )}
   end
 
   def update(assigns, socket) do
