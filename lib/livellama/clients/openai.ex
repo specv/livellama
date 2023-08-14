@@ -45,16 +45,16 @@ defmodule LiveLlama.Clients.OpenAI do
           ]
         )
   @doc "Supported options:\n#{NimbleOptions.docs(@opts)}"
-  def chat_completions!(opts) do
+  def chat_completions(opts) do
     opts
     |> NimbleOptions.validate!(@opts)
     |> build_request()
     |> then(fn
       %Req.Request{options: %{json: %{stream: false}}} = req ->
-        response!(req)
+        response(req)
 
       %Req.Request{options: %{json: %{stream: true}}} = req ->
-        stream_response!(req)
+        stream_response(req)
     end)
   end
 
@@ -64,13 +64,14 @@ defmodule LiveLlama.Clients.OpenAI do
     |> Enum.map(fn
       "" -> nil
       "data: [DONE]" -> nil
-      "data: " <> json -> Jason.decode!(json)
+      "data: " <> data -> data
+      data -> data
     end)
     |> Enum.reject(&is_nil/1)
   end
 
-  defp stream_request!(request, stream_to, ref) do
-    Req.request!(request,
+  defp stream_request(request, stream_to, ref) do
+    Req.request(request,
       finch_request: fn request, finch_request, finch_name, finch_options ->
         on_chunk = fn chunk, response ->
           send(stream_to, {ref, chunk})
@@ -83,39 +84,44 @@ defmodule LiveLlama.Clients.OpenAI do
         end
       end
     )
-
-    send(stream_to, {ref, :done})
+    |> case do
+      {:ok, _response} -> send(stream_to, {ref, :done})
+      {:error, exception} -> send(stream_to, {ref, {:exception, exception}})
+    end
   end
 
-  defp stream_response!(request) do
+  defp stream_response(request) do
     {stream_to, ref} = {self(), make_ref()}
-    request_task = Task.async(fn -> stream_request!(request, stream_to, ref) end)
+    request_task = Task.async(fn -> stream_request(request, stream_to, ref) end)
 
-    Req.Response.new(
-      status:
-        receive do
-          {^ref, {:status, status}} -> status
-        end,
-      hedaers:
-        receive do
-          {^ref, {:headers, headers}} -> headers
-        end,
-      body:
-        Stream.resource(
-          fn -> [] end,
-          fn [] ->
-            receive do
-              {^ref, {:data, chunk}} -> {parse_chunk(chunk), []}
-              {^ref, :done} -> {:halt, []}
-            end
-          end,
-          fn [] -> Task.shutdown(request_task) end
-        )
-    )
+    receive do
+      {^ref, {:exception, exception}} ->
+        {:error, exception}
+
+      {^ref, {:status, status}} ->
+        headers =
+          receive do
+            {^ref, {:headers, headers}} -> headers
+          end
+
+        body =
+          Stream.resource(
+            fn -> [] end,
+            fn [] ->
+              receive do
+                {^ref, {:data, chunk}} -> {parse_chunk(chunk), []}
+                {^ref, :done} -> {:halt, []}
+              end
+            end,
+            fn [] -> Task.shutdown(request_task) end
+          )
+
+        {:ok, Req.Response.new(status: status, headers: headers, body: body)}
+    end
   end
 
-  defp response!(request) do
-    Req.request!(request)
+  defp response(request) do
+    Req.request(request)
   end
 
   defp build_request(opts) do
