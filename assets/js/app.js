@@ -42,23 +42,33 @@ window.addEventListener("scroll-to-bottom", e => e.target.scrollTop = e.target.s
 
 Hooks.EnterSubmit = {
   mounted() {
-    this.el.addEventListener("keydown", (e) => {
+    this.el.addEventListener("keydown", e => {
       // Submit form on Enter press (without Shift)
       if (e.key === "Enter" && !e.shiftKey) {
         // Click submit button
         this.el.nextElementSibling.click()
         e.preventDefault()
       }
-      // Prevent whitespace only input
-      else if ([" ", "Enter"].includes(e.key) && this.el.value.trim() === "") {
-        this.el.value = ""
-        e.preventDefault()
+    })
+
+    // Prevent form submission when typed content consists only of whitespace
+    this.el.addEventListener("keyup", e => {
+      if (this.el.value.trim() === "") {
+        this.el.setCustomValidity(" ")
+      }
+      else {
+        this.el.setCustomValidity("")
       }
     })
 
-    this.el.addEventListener("paste", (e) => {
-      // Prevent whitespace only paste
-      if (e.clipboardData.getData('text').trim() === "") e.preventDefault()
+    // Prevent form submission when pasted content consists only of whitespace
+    this.el.addEventListener("paste", e => {
+      if (e.clipboardData.getData('text').trim() === "") {
+        this.el.setCustomValidity(" ")
+      }
+      else {
+        this.el.setCustomValidity("")
+      }
     })
   }
 }

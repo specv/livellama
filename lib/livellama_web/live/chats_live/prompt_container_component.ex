@@ -79,7 +79,6 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
           required
           autofocus
           phx-hook="EnterSubmit"
-          oninput="setCustomValidity('')"
           oninvalid="setCustomValidity(' ')"
         />
         <button
