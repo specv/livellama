@@ -29,6 +29,8 @@ config :livellama, LiveLlamaWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :livellama, LiveLlama.Mailer, adapter: Swoosh.Adapters.Local
 
+config :livellama, :ash_apis, [LiveLlama.Chats]
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
