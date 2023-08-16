@@ -1,5 +1,6 @@
 defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   use LiveLlamaWeb, :live_component
+  alias LiveLlama.Chats.Chat
 
   def render(assigns) do
     ~H"""
@@ -7,7 +8,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
         <.logo />
         <.new_chat />
-        <.chats />
+        <.chats chats={@chats} />
         <.settings />
       </div>
     </aside>
@@ -17,41 +18,14 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   defp chats(assigns) do
     ~H"""
     <div class="h-1/2 space-y-4 overflow-y-auto border-b border-slate-300 px-2 py-4 dark:border-slate-700">
-      <button class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800">
+      <button
+        :for={chat <- @chats}
+        class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
+      >
         <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          Tailwind Classes
+          <%= chat.title %>
         </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">12 Mar</p>
-      </button>
-      <button class="flex w-full flex-col gap-y-2 rounded-lg bg-slate-200 px-3 py-2 text-left transition-colors duration-200 focus:outline-none dark:bg-slate-800">
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          explain quantum computing
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">10 Feb</p>
-      </button>
-      <button class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800">
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          How to create ERP Diagram
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">22 Jan</p>
-      </button>
-      <button class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800">
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          API Scaling Strategies
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">1 Jan</p>
-      </button>
-      <button class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800">
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          What is GPT UI?
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">1 Jan</p>
-      </button>
-      <button class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800">
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          How to use Tailwind components?
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400">1 Jan</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400"><%= chat.inserted_at %></p>
       </button>
     </div>
     """
@@ -142,5 +116,12 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
       </button>
     </div>
     """
+  end
+
+  def mount(socket) do
+    Chat.create!(%{title: "Tailwind"})
+    Chat.create!(%{title: "CSS"})
+
+    {:ok, assign(socket, chats: Chat.list!())}
   end
 end

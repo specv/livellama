@@ -1,5 +1,5 @@
 defmodule LiveLlama.Chats.Chat do
-  use Ash.Resource
+  use Ash.Resource, data_layer: Ash.DataLayer.Ets
 
   attributes do
     uuid_primary_key :id
@@ -10,6 +10,13 @@ defmodule LiveLlama.Chats.Chat do
     end
 
     timestamps()
+  end
+
+  code_interface do
+    define_for LiveLlama.Chats
+
+    define :list, action: :read
+    define :create
   end
 
   actions do
