@@ -21,6 +21,7 @@ defmodule LiveLlamaWeb.Router do
 
     live_session :default, layout: false do
       live "/chats", ChatsLive, :index
+      live "/chats/:chat_id", ChatsLive, :chat
     end
   end
 

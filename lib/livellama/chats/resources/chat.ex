@@ -15,11 +15,26 @@ defmodule LiveLlama.Chats.Chat do
   code_interface do
     define_for LiveLlama.Chats
 
-    define :list, action: :read
     define :create
+    define :list, action: :list
+    define :get_by_id, args: [:id]
   end
 
   actions do
     defaults [:create, :read, :update, :destroy]
+
+    read :list do
+      prepare build(sort: [inserted_at: :desc])
+    end
+
+    read :get_by_id do
+      argument :id, :string do
+        allow_nil? false
+      end
+
+      get? true
+
+      filter expr(id == ^arg(:id))
+    end
   end
 end

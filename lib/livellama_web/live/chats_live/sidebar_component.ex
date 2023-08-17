@@ -6,9 +6,9 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     ~H"""
     <aside class="flex">
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
-        <.logo />
-        <.new_chat />
-        <.chats chats={@chats} />
+        <.logo count={length(@chats)} />
+        <.new_chat myself={@myself} />
+        <.chats myself={@myself} chats={@chats} current_chat_id={@current_chat && @current_chat.id} />
         <.settings />
       </div>
     </aside>
@@ -20,7 +20,13 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     <div class="h-1/2 space-y-4 overflow-y-auto border-b border-slate-300 px-2 py-4 dark:border-slate-700">
       <button
         :for={chat <- @chats}
-        class="flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
+        phx-target={@myself}
+        phx-click="select_chat"
+        phx-value-chat_id={chat.id}
+        class={[
+          chat.id == @current_chat_id and "bg-slate-200 dark:bg-slate-800",
+          "flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
+        ]}
       >
         <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
           <%= chat.title %>
@@ -45,7 +51,10 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         </path>
       </svg>
       <h2 class="px-5 text-lg font-medium text-slate-800 dark:text-slate-200">
-        Chats <span class="mx-2 rounded-full bg-blue-600 px-2 py-1 text-xs text-slate-200">6</span>
+        Chats
+        <span class="mx-2 rounded-full bg-blue-600 px-2 py-1 text-xs text-slate-200">
+          <%= @count %>
+        </span>
       </h2>
     </div>
     """
@@ -54,7 +63,11 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   defp new_chat(assigns) do
     ~H"""
     <div class="mx-2 mt-8">
-      <button class="flex w-full gap-x-4 rounded-lg border border-slate-300 p-4 text-left text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+      <button
+        phx-click="new_chat"
+        phx-target={@myself}
+        class="flex w-full gap-x-4 rounded-lg border border-slate-300 p-4 text-left text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5"
@@ -119,9 +132,19 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   end
 
   def mount(socket) do
-    Chat.create!(%{title: "Tailwind"})
-    Chat.create!(%{title: "CSS"})
-
     {:ok, assign(socket, chats: Chat.list!())}
+  end
+
+  def handle_event("new_chat", _params, socket) do
+    chat = Chat.create!(%{title: "New Chat"})
+
+    {:noreply,
+     socket
+     |> assign(chats: Chat.list!())
+     |> push_patch(to: ~p"/chats/#{chat}")}
+  end
+
+  def handle_event("select_chat", %{"chat_id" => chat_id}, socket) do
+    {:noreply, push_patch(socket, to: ~p"/chats/#{chat_id}")}
   end
 end
