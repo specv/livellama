@@ -1,6 +1,5 @@
 defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   use LiveLlamaWeb, :live_component
-  alias LiveLlama.Chats.Chat
 
   def render(assigns) do
     ~H"""
@@ -131,17 +130,9 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     """
   end
 
-  def mount(socket) do
-    {:ok, assign(socket, chats: Chat.list!())}
-  end
-
   def handle_event("new_chat", _params, socket) do
-    chat = Chat.create!(%{title: "New Chat"})
-
-    {:noreply,
-     socket
-     |> assign(chats: Chat.list!())
-     |> push_patch(to: ~p"/chats/#{chat}")}
+    send(self(), :new_chat)
+    {:noreply, socket}
   end
 
   def handle_event("select_chat", %{"chat_id" => chat_id}, socket) do

@@ -1,6 +1,7 @@
 defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   use LiveLlamaWeb, :live_component
   alias LiveLlama.LLMs.OpenAI
+  alias LiveLlama.Chats.Chat
 
   def render(assigns) do
     ~H"""
@@ -218,6 +219,15 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   end
 
   def handle_event("submit", %{"input-message" => message}, socket) do
+    if !socket.assigns.current_chat do
+      send(self(), :new_chat)
+    end
+
+    send_update(self(), __MODULE__, id: socket.assigns.id, submit: message)
+    {:noreply, assign(socket, status: :waiting)}
+  end
+
+  def update(%{submit: message}, socket) do
     socket =
       update(socket, :messages, &OpenAI.user_message(socket.assigns.current_chat.id, &1, message))
 
@@ -238,7 +248,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       send_update(myself, __MODULE__, id: socket.assigns.id, finished: true)
     end)
 
-    {:noreply, assign(socket, status: :waiting)}
+    {:ok, socket}
   end
 
   def update(%{streaming: {:ok, chunk}}, socket) do

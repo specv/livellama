@@ -9,6 +9,7 @@ defmodule LiveLlamaWeb.ChatsLive do
         <.live_component
           module={LiveLlamaWeb.ChatsLive.SidebarComponent}
           id="sidebar"
+          chats={@chats}
           current_chat={@current_chat}
         />
       </div>
@@ -23,6 +24,10 @@ defmodule LiveLlamaWeb.ChatsLive do
     """
   end
 
+  def mount(_params, _session, socket) do
+    {:ok, assign(socket, chats: Chat.list!())}
+  end
+
   def handle_params(params, _uri, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
@@ -33,5 +38,14 @@ defmodule LiveLlamaWeb.ChatsLive do
 
   def apply_action(socket, :chat, %{"chat_id" => chat_id}) do
     assign(socket, current_chat: Chat.get_by_id!(chat_id))
+  end
+
+  def handle_info(:new_chat, socket) do
+    chat = Chat.create!(%{title: "New Chat"})
+
+    {:noreply,
+     socket
+     |> assign(chats: Chat.list!())
+     |> push_patch(to: ~p"/chats/#{chat}")}
   end
 end
