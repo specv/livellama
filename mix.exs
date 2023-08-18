@@ -49,7 +49,8 @@ defmodule LiveLlama.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:nimble_options, "~> 1.0"},
       {:req, "~> 0.3.0"},
-      {:ash, "~> 2.14.1"}
+      {:ash, "~> 2.14.1"},
+      {:ash_postgres, "~> 1.3.6"}
     ]
   end
 

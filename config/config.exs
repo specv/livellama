@@ -30,6 +30,7 @@ config :livellama, LiveLlamaWeb.Endpoint,
 config :livellama, LiveLlama.Mailer, adapter: Swoosh.Adapters.Local
 
 config :livellama, :ash_apis, [LiveLlama.Chats]
+config :livellama, :ecto_repos, [LiveLlama.Repo]
 
 # Configure esbuild (the version is required)
 config :esbuild,

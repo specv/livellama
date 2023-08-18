@@ -3,7 +3,7 @@ defmodule LiveLlama.Chats.Message do
     use Ash.Type.Enum, values: [:system, :user, :assistant]
   end
 
-  use Ash.Resource, data_layer: Ash.DataLayer.Ets
+  use Ash.Resource, data_layer: AshPostgres.DataLayer
 
   attributes do
     uuid_primary_key :id
@@ -50,5 +50,10 @@ defmodule LiveLlama.Chats.Message do
 
       change manage_relationship(:chat_id, :chat, type: :append)
     end
+  end
+
+  postgres do
+    table "messages"
+    repo LiveLlama.Repo
   end
 end

@@ -1,5 +1,5 @@
 defmodule LiveLlama.Chats.Chat do
-  use Ash.Resource, data_layer: Ash.DataLayer.Ets
+  use Ash.Resource, data_layer: AshPostgres.DataLayer
 
   attributes do
     uuid_primary_key :id
@@ -44,5 +44,10 @@ defmodule LiveLlama.Chats.Chat do
 
       filter expr(id == ^arg(:id))
     end
+  end
+
+  postgres do
+    table "chats"
+    repo LiveLlama.Repo
   end
 end

@@ -15,9 +15,10 @@ defmodule LiveLlama.Application do
       # Start Finch
       {Finch, name: LiveLlama.Finch},
       # Start the Endpoint (http/https)
-      LiveLlamaWeb.Endpoint
+      LiveLlamaWeb.Endpoint,
       # Start a worker by calling: LiveLlama.Worker.start_link(arg)
       # {LiveLlama.Worker, arg}
+      LiveLlama.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
