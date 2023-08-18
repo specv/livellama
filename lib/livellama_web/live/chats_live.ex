@@ -16,6 +16,7 @@ defmodule LiveLlamaWeb.ChatsLive do
         <.live_component
           module={LiveLlamaWeb.ChatsLive.PromptContainerComponent}
           id="prompt_container"
+          current_chat={@current_chat}
         />
       </div>
     </div>

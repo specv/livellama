@@ -1,5 +1,6 @@
 defmodule LiveLlama.LLMs.OpenAI do
   require Logger
+  alias LiveLlama.Chats.Message
 
   @unkown_error "Unknown error occurred. Please try again later."
   @internal_error_codes ["insufficient_quota", "invalid_api_key"]
@@ -35,7 +36,7 @@ defmodule LiveLlama.LLMs.OpenAI do
                error["error"]["message"]
              end}
         end)
-        |> Stream.reject(&is_nil(&1))
+        |> Stream.reject(&is_nil/1)
 
       {:error, exception} ->
         Logger.error(exception)
@@ -45,30 +46,34 @@ defmodule LiveLlama.LLMs.OpenAI do
 
   def transform_messages(messages) do
     messages
-    |> Enum.map(&Map.delete(&1, "error"))
+    |> Enum.map(&%{role: &1.role, content: &1.content})
   end
 
-  def user_message(messages, message) do
+  def user_message(chat_id, messages, message) do
+    Message.create!(%{chat_id: chat_id, role: :user, content: message})
+
     messages ++
       [
-        %{
-          "role" => "user",
-          "content" => message,
-          "error" => ""
+        %Message{
+          role: :user,
+          content: message,
+          error: ""
         },
         %{
-          "role" => "assistant",
-          "content" => "",
-          "error" => ""
+          role: :assistant,
+          content: "",
+          error: ""
         }
       ]
   end
 
-  def assistant_message(messages, chunk, error) do
+  def assistant_message(chat_id, messages, message, error) do
+    Message.create!(%{chat_id: chat_id, role: :assistant, content: message, error: error})
+
     List.update_at(messages, -1, fn msg ->
       msg
-      |> Map.put("error", error)
-      |> Map.update!("content", &(&1 <> chunk))
+      |> Map.put(:content, message)
+      |> Map.put(:error, error)
     end)
   end
 end

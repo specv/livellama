@@ -6,7 +6,7 @@ defmodule LiveLlama.Clients.OpenAI do
             doc: "ID of the model to use."
           ],
           messages: [
-            type: {:list, {:map, :string, :string}},
+            type: {:list, {:map, :atom, :any}},
             required: true,
             doc: "A list of messages comprising the conversation so far."
           ],

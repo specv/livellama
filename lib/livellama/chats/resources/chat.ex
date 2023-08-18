@@ -12,6 +12,12 @@ defmodule LiveLlama.Chats.Chat do
     timestamps()
   end
 
+  relationships do
+    has_many :messages, LiveLlama.Chats.Message do
+      sort inserted_at: :asc
+    end
+  end
+
   code_interface do
     define_for LiveLlama.Chats
 
@@ -33,6 +39,8 @@ defmodule LiveLlama.Chats.Chat do
       end
 
       get? true
+
+      prepare build(load: [:messages], sort: [inserted_at: :desc])
 
       filter expr(id == ^arg(:id))
     end

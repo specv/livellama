@@ -10,14 +10,14 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
       <div class="messages flex-1 space-y-6 overflow-y-auto bg-slate-200 p-4 text-sm leading-6 text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-300 sm:text-base sm:leading-7">
         <div
           :for={msg <- @messages}
-          :if={msg["role"] != "system"}
+          :if={msg.role != :system}
           phx-mounted={JS.dispatch("scroll-to-bottom", to: ".messages")}
         >
-          <.user_message :if={msg["role"] == "user"} message={msg["content"]} />
+          <.user_message :if={msg.role == :user} message={msg.content} />
           <.assistant_message
-            :if={msg["role"] == "assistant"}
-            message={msg["content"]}
-            error={msg["error"]}
+            :if={msg.role == :assistant}
+            message={msg.content}
+            error={msg.error}
             status={@status}
           />
         </div>
@@ -218,7 +218,8 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   end
 
   def handle_event("submit", %{"input-message" => message}, socket) do
-    socket = update(socket, :messages, &OpenAI.user_message(&1, message))
+    socket =
+      update(socket, :messages, &OpenAI.user_message(socket.assigns.current_chat.id, &1, message))
 
     myself = self()
     # Task.async
@@ -262,6 +263,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
      |> update(
        :messages,
        &OpenAI.assistant_message(
+         socket.assigns.current_chat.id,
          &1,
          socket.assigns.streaming_msg,
          socket.assigns.streaming_error
@@ -270,6 +272,12 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   end
 
   def update(assigns, socket) do
-    {:ok, assign(socket, assigns)}
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(
+       :messages,
+       if(assigns.current_chat, do: assigns.current_chat.messages, else: [])
+     )}
   end
 end
