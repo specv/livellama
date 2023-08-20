@@ -219,12 +219,18 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
   end
 
   def handle_event("submit", %{"input-message" => message}, socket) do
-    if !socket.assigns.current_chat do
-      send(self(), :new_chat)
-    end
-
     send_update(self(), __MODULE__, id: socket.assigns.id, submit: message)
-    {:noreply, assign(socket, status: :waiting)}
+
+    if socket.assigns.current_chat do
+      {:noreply, assign(socket, status: :waiting)}
+    else
+      chat = Chat.create!(%{title: "New Chat"})
+
+      {:noreply,
+       socket
+       |> assign(status: :waiting, chats: Chat.list!())
+       |> push_patch(to: ~p"/chats/#{chat}")}
+    end
   end
 
   def update(%{submit: message}, socket) do

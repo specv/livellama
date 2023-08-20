@@ -39,13 +39,4 @@ defmodule LiveLlamaWeb.ChatsLive do
   def apply_action(socket, :chat, %{"chat_id" => chat_id}) do
     assign(socket, current_chat: Chat.get_by_id!(chat_id))
   end
-
-  def handle_info(:new_chat, socket) do
-    chat = Chat.create!(%{title: "New Chat"})
-
-    {:noreply,
-     socket
-     |> assign(chats: Chat.list!())
-     |> push_patch(to: ~p"/chats/#{chat}")}
-  end
 end

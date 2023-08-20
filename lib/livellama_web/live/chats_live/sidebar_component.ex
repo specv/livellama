@@ -131,8 +131,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   end
 
   def handle_event("new_chat", _params, socket) do
-    send(self(), :new_chat)
-    {:noreply, socket}
+    {:noreply, push_patch(socket, to: ~p"/chats")}
   end
 
   def handle_event("select_chat", %{"chat_id" => chat_id}, socket) do
