@@ -163,6 +163,20 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     |> Chat.get_by_id!()
     |> Chat.delete!()
 
-    {:noreply, assign(socket, chats: Chat.list!())}
+    if socket.assigns.current_chat && socket.assigns.current_chat.id == chat_id do
+      {:noreply,
+       socket
+       |> assign(chats: Chat.list!())
+       |> push_patch(to: ~p"/chats")}
+    else
+      {:noreply, assign(socket, chats: Chat.list!())}
+    end
+  end
+
+  def update(assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:chats, Chat.list!())}
   end
 end

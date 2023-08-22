@@ -9,7 +9,6 @@ defmodule LiveLlamaWeb.ChatsLive do
         <.live_component
           module={LiveLlamaWeb.ChatsLive.SidebarComponent}
           id="sidebar"
-          chats={@chats}
           current_chat={@current_chat}
         />
       </div>
@@ -22,10 +21,6 @@ defmodule LiveLlamaWeb.ChatsLive do
       </div>
     </div>
     """
-  end
-
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, chats: Chat.list!())}
   end
 
   def handle_params(params, _uri, socket) do
