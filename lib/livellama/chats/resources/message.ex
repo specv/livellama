@@ -55,5 +55,9 @@ defmodule LiveLlama.Chats.Message do
   postgres do
     table "messages"
     repo LiveLlama.Repo
+
+    references do
+      reference :chat, on_delete: :delete
+    end
   end
 end

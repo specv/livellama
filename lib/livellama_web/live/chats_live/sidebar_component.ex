@@ -1,5 +1,6 @@
 defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   use LiveLlamaWeb, :live_component
+  alias LiveLlama.Chats.Chat
 
   def render(assigns) do
     ~H"""
@@ -24,14 +25,33 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         phx-value-chat_id={chat.id}
         class={[
           chat.id == @current_chat_id and "bg-slate-200 dark:bg-slate-800",
-          "flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
+          "group relative flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
         ]}
       >
         <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
           <%= chat.title %>
         </h1>
         <p class="text-xs text-slate-500 dark:text-slate-400"><%= chat.inserted_at %></p>
+        <div phx-click={show_modal("delete-chat-modal-#{chat.id}")}>
+          <.icon
+            name="hero-trash"
+            class="hover:text-red-600 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4 text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          />
+        </div>
       </button>
+
+      <.modal
+        :for={chat <- @chats}
+        id={"delete-chat-modal-#{chat.id}"}
+        on_confirm={
+          JS.push("delete_chat", value: %{chat_id: chat.id}, target: @myself)
+          |> hide_modal("delete-chat-modal-#{chat.id}")
+        }
+      >
+        Are you sure you want to delete "<%= chat.title %>"?
+        <:cancel>Cancel</:cancel>
+        <:confirm>Delete</:confirm>
+      </.modal>
     </div>
     """
   end
@@ -136,5 +156,13 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
 
   def handle_event("select_chat", %{"chat_id" => chat_id}, socket) do
     {:noreply, push_patch(socket, to: ~p"/chats/#{chat_id}")}
+  end
+
+  def handle_event("delete_chat", %{"chat_id" => chat_id}, socket) do
+    chat_id
+    |> Chat.get_by_id!()
+    |> Chat.delete!()
+
+    {:noreply, assign(socket, chats: Chat.list!())}
   end
 end

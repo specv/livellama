@@ -22,8 +22,9 @@ defmodule LiveLlama.Chats.Chat do
     define_for LiveLlama.Chats
 
     define :create
-    define :list, action: :list
-    define :get_by_id, args: [:id]
+    define :list
+    define :get_by_id, args: [:chat_id]
+    define :delete, action: :destroy
   end
 
   actions do
@@ -34,7 +35,7 @@ defmodule LiveLlama.Chats.Chat do
     end
 
     read :get_by_id do
-      argument :id, :string do
+      argument :chat_id, :uuid do
         allow_nil? false
       end
 
@@ -42,7 +43,7 @@ defmodule LiveLlama.Chats.Chat do
 
       prepare build(load: [:messages], sort: [inserted_at: :desc])
 
-      filter expr(id == ^arg(:id))
+      filter expr(id == ^arg(:chat_id))
     end
   end
 
