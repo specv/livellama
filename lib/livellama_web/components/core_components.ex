@@ -39,7 +39,10 @@ defmodule LiveLlamaWeb.CoreComponents do
   attr :id, :string, required: true
   attr :show, :boolean, default: false
   attr :on_cancel, JS, default: %JS{}
+  attr :on_confirm, JS, default: %JS{}
   slot :inner_block, required: true
+  slot :confirm
+  slot :cancel
 
   def modal(assigns) do
     ~H"""
@@ -50,7 +53,11 @@ defmodule LiveLlamaWeb.CoreComponents do
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="bg-zinc-50/90 fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="bg-slate-700/70 fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -66,7 +73,7 @@ defmodule LiveLlamaWeb.CoreComponents do
               phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
               phx-key="escape"
               phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-white p-14 shadow-lg ring-1 transition"
+              class="shadow-zinc-700/10 ring-zinc-700/10 relative hidden rounded-2xl bg-slate-50 p-14 shadow-lg ring-1 transition dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -80,6 +87,28 @@ defmodule LiveLlamaWeb.CoreComponents do
               </div>
               <div id={"#{@id}-content"}>
                 <%= render_slot(@inner_block) %>
+              </div>
+              <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <%= for confirm <- @confirm do %>
+                  <button
+                    id={"#{@id}-confirm"}
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    phx-click={@on_confirm}
+                    phx-disable-with
+                    {assigns_to_attributes(confirm)}
+                  >
+                    <%= render_slot(confirm) %>
+                  </button>
+                <% end %>
+                <%= for cancel <- @cancel do %>
+                  <button
+                    class="mt-3 w-full inline-flex justify-center rounded-md shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    phx-click={hide_modal(@on_cancel, @id)}
+                    {assigns_to_attributes(cancel)}
+                  >
+                    <%= render_slot(cancel) %>
+                  </button>
+                <% end %>
               </div>
             </.focus_wrap>
           </div>
