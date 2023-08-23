@@ -50,7 +50,8 @@ defmodule LiveLlama.MixProject do
       {:nimble_options, "~> 1.0"},
       {:req, "~> 0.3.0"},
       {:ash, "~> 2.14.1"},
-      {:ash_postgres, "~> 1.3.6"}
+      {:ash_postgres, "~> 1.3.6"},
+      {:ash_archival, "~> 0.1.4"}
     ]
   end
 

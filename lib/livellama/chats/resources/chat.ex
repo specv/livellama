@@ -1,5 +1,7 @@
 defmodule LiveLlama.Chats.Chat do
-  use Ash.Resource, data_layer: AshPostgres.DataLayer
+  use Ash.Resource,
+    data_layer: AshPostgres.DataLayer,
+    extensions: [AshArchival.Resource]
 
   attributes do
     uuid_primary_key :id
