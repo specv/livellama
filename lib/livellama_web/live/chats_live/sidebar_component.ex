@@ -204,9 +204,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   end
 
   def handle_event("delete_chat", %{"chat_id" => chat_id}, socket) do
-    chat_id
-    |> Chat.get_by_id!()
-    |> Chat.destroy!()
+    Chat.destroy!(%Chat{id: chat_id})
 
     if socket.assigns.current_chat && socket.assigns.current_chat.id == chat_id do
       {:noreply,
@@ -227,9 +225,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   end
 
   def handle_event("submit_edit_chat", %{"chat_id" => chat_id, "value" => value}, socket) do
-    chat_id
-    |> Chat.get_by_id!()
-    |> Chat.update!(%{title: value})
+    Chat.update!(%Chat{id: chat_id}, %{title: value})
 
     {:noreply, assign(socket, chats: Chat.list!(), editing_chat_id: nil)}
   end
