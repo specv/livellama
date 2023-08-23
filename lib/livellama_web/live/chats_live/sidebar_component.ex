@@ -8,7 +8,12 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
         <.logo count={length(@chats)} />
         <.new_chat myself={@myself} />
-        <.chats myself={@myself} chats={@chats} current_chat_id={@current_chat && @current_chat.id} />
+        <.chats
+          myself={@myself}
+          chats={@chats}
+          current_chat_id={@current_chat && @current_chat.id}
+          editing_chat_id={@editing_chat_id}
+        />
         <.settings />
       </div>
     </aside>
@@ -20,24 +25,64 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     <div class="h-1/2 space-y-4 overflow-y-auto border-b border-slate-300 px-2 py-4 dark:border-slate-700">
       <button
         :for={chat <- @chats}
-        phx-target={@myself}
         phx-click="select_chat"
         phx-value-chat_id={chat.id}
+        phx-target={@myself}
         class={[
           chat.id == @current_chat_id and "bg-slate-200 dark:bg-slate-800",
-          "group relative flex w-full flex-col gap-y-2 rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
+          "group relative flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800"
         ]}
       >
-        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-          <%= chat.title %>
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400"><%= chat.inserted_at %></p>
-        <div phx-click={show_modal("delete-chat-modal-#{chat.id}")}>
-          <.icon
-            name="hero-trash"
-            class="hover:text-red-600 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4 text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          />
-        </div>
+        <%= if chat.id == @editing_chat_id do %>
+          <form phx-submit="submit_edit_chat" phx-target={@myself} class="flex w-full">
+            <input
+              name="value"
+              type="text"
+              onclick="event.stopPropagation()"
+              class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200 border-none bg-transparent w-full p-0 m-0"
+              value={chat.title}
+            />
+            <input name="chat_id" value={chat.id} hidden />
+            <div phx-click="cancel_edit_chat" phx-value-chat_id={chat.id} phx-target={@myself}>
+              <.icon
+                name="hero-x-mark"
+                class="hover:text-white absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
+              />
+            </div>
+            <div onclick="event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); event.stopPropagation()">
+              <.icon
+                name="hero-check"
+                class="hover:text-white absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
+              />
+            </div>
+          </form>
+        <% else %>
+          <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
+            <%= chat.title %>
+          </h1>
+          <div
+            phx-click="edit_chat"
+            phx-value-chat_id={chat.id}
+            phx-target={@myself}
+            class="text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          >
+            <div>
+              <.icon
+                name="hero-pencil-square"
+                class="hover:text-blue-600 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
+              />
+            </div>
+            <div phx-click={show_modal("delete-chat-modal-#{chat.id}")}>
+              <.icon
+                name="hero-trash"
+                class="hover:text-red-600 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
+              />
+            </div>
+          </div>
+        <% end %>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          <%= chat.inserted_at %>
+        </p>
       </button>
 
       <.modal
@@ -161,7 +206,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   def handle_event("delete_chat", %{"chat_id" => chat_id}, socket) do
     chat_id
     |> Chat.get_by_id!()
-    |> Chat.delete!()
+    |> Chat.destroy!()
 
     if socket.assigns.current_chat && socket.assigns.current_chat.id == chat_id do
       {:noreply,
@@ -173,10 +218,26 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     end
   end
 
+  def handle_event("edit_chat", %{"chat_id" => chat_id}, socket) do
+    {:noreply, assign(socket, editing_chat_id: chat_id)}
+  end
+
+  def handle_event("cancel_edit_chat", %{"chat_id" => _chat_id}, socket) do
+    {:noreply, assign(socket, editing_chat_id: nil)}
+  end
+
+  def handle_event("submit_edit_chat", %{"chat_id" => chat_id, "value" => value}, socket) do
+    chat_id
+    |> Chat.get_by_id!()
+    |> Chat.update!(%{title: value})
+
+    {:noreply, assign(socket, chats: Chat.list!(), editing_chat_id: nil)}
+  end
+
   def update(assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:chats, Chat.list!())}
+     |> assign(chats: Chat.list!(), editing_chat_id: nil)}
   end
 end

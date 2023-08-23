@@ -24,9 +24,10 @@ defmodule LiveLlama.Chats.Chat do
     define_for LiveLlama.Chats
 
     define :create
+    define :update
+    define :destroy
     define :list
     define :get_by_id, args: [:chat_id]
-    define :delete, action: :destroy
   end
 
   actions do
