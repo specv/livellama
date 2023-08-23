@@ -8,7 +8,7 @@ defmodule LiveLlama.Chats.Chat do
 
     attribute :title, :string do
       allow_nil? false
-      constraints trim?: false, allow_empty?: false
+      constraints trim?: true, allow_empty?: false
     end
 
     timestamps()
