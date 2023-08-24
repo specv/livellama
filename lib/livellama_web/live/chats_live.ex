@@ -4,7 +4,7 @@ defmodule LiveLlamaWeb.ChatsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="flex dark:bg-slate-700">
+    <div class="flex">
       <div class="w-64 border-r border-slate-300 dark:border-slate-700">
         <.live_component
           module={LiveLlamaWeb.ChatsLive.SidebarComponent}

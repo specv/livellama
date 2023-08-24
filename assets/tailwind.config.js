@@ -15,6 +15,7 @@ module.exports = {
     extend: {
       colors: {
         brand: "#FD4F00",
+        "slate-880": "rgb(18, 27, 45)",
       }
     },
   },
