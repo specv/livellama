@@ -29,8 +29,11 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         phx-value-chat_id={chat.id}
         phx-target={@myself}
         class={[
-          chat.id == @current_chat_id and "bg-slate-200 dark:bg-slate-800",
-          "group relative flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:hover:bg-slate-800 cursor-pointer"
+          "group relative flex w-full flex-col rounded-lg px-3 py-2 text-left focus:outline-none cursor-pointer",
+          if(chat.id == @current_chat_id,
+            do: "bg-slate-200 dark:bg-slate-800",
+            else: "hover:bg-slate-100 dark:hover:bg-slate-400"
+          )
         ]}
       >
         <%= if chat.id == @editing_chat_id do %>
@@ -66,9 +69,21 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
             </div>
           </form>
         <% else %>
-          <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-            <%= chat.title %>
-          </h1>
+          <div class="w-full pr-8 group">
+            <div class="text-ellipsis max-h-5 overflow-hidden break-all relative">
+              <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
+                <%= chat.title %>
+                <div class={[
+                  "absolute inset-y-0 right-0 w-10 bg-gradient-to-l",
+                  if(chat.id == @current_chat_id,
+                    do: "from-slate-200 group-hover:from-slate-200",
+                    else: "from-slate-50 group-hover:from-slate-100"
+                  )
+                ]}>
+                </div>
+              </h1>
+            </div>
+          </div>
           <div
             phx-click="edit_chat"
             phx-value-chat_id={chat.id}
