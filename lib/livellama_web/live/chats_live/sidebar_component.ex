@@ -23,93 +23,13 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   defp chats(assigns) do
     ~H"""
     <div class="h-1/2 space-y-4 overflow-y-auto border-b border-slate-300 px-2 py-4 dark:border-slate-700">
-      <a
+      <.chat
         :for={chat <- @chats}
-        phx-click="select_chat"
-        phx-value-chat_id={chat.id}
-        phx-target={@myself}
-        class={[
-          "group relative flex w-full flex-col rounded-lg px-3 py-2 text-left focus:outline-none cursor-pointer",
-          if(chat.id == @current_chat_id,
-            do: "bg-slate-200 dark:bg-slate-800",
-            else: "hover:bg-slate-100 dark:hover:bg-slate-880"
-          )
-        ]}
-      >
-        <%= if chat.id == @editing_chat_id do %>
-          <form
-            phx-submit="submit_edit_chat"
-            phx-click-away="cancel_edit_chat"
-            phx-target={@myself}
-            class="flex w-full pr-8"
-          >
-            <input
-              type="text"
-              name="value"
-              value={chat.title}
-              phx-mounted={JS.focus()}
-              phx-target={@myself}
-              onclick="event.stopPropagation()"
-              onfocus="setSelectionRange(value.length, value.length); scrollLeft = scrollWidth"
-              onkeyup="if(event.key === 'Enter') event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}))"
-              class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200 border-none bg-transparent w-full p-0 m-0"
-            />
-            <input name="chat_id" value={chat.id} hidden />
-            <div phx-click="cancel_edit_chat" phx-value-chat_id={chat.id} phx-target={@myself}>
-              <.icon
-                name="hero-x-mark"
-                class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
-              />
-            </div>
-            <div onclick="event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); event.stopPropagation()">
-              <.icon
-                name="hero-check"
-                class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
-              />
-            </div>
-          </form>
-        <% else %>
-          <div class="w-full group">
-            <div class="text-ellipsis max-h-5 overflow-hidden break-all relative">
-              <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
-                <%= chat.title %>
-                <div class={[
-                  "absolute inset-y-0 right-0 w-12 bg-gradient-to-l group-hover:from-65%",
-                  if(chat.id == @current_chat_id,
-                    do:
-                      "from-slate-200 group-hover:from-slate-200 dark:from-slate-800 dark:group-hover:from-slate-800",
-                    else:
-                      "from-slate-50 group-hover:from-slate-100 dark:from-slate-900 dark:group-hover:from-slate-880"
-                  )
-                ]}>
-                </div>
-              </h1>
-            </div>
-          </div>
-          <div
-            phx-click="edit_chat"
-            phx-value-chat_id={chat.id}
-            phx-target={@myself}
-            class="text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
-            <div>
-              <.icon
-                name="hero-pencil-square"
-                class="hover:text-blue-600 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
-              />
-            </div>
-            <div phx-click={show_modal("delete-chat-modal-#{chat.id}")}>
-              <.icon
-                name="hero-trash"
-                class="hover:text-red-600 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
-              />
-            </div>
-          </div>
-        <% end %>
-        <p class="text-xs text-slate-500 dark:text-slate-400">
-          <%= chat.inserted_at %>
-        </p>
-      </a>
+        myself={@myself}
+        chat={chat}
+        current_chat_id={@current_chat_id}
+        editing_chat_id={@editing_chat_id}
+      />
 
       <.modal
         :for={chat <- @chats}
@@ -124,6 +44,110 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         <:confirm>Delete</:confirm>
       </.modal>
     </div>
+    """
+  end
+
+  defp chat(assigns) do
+    ~H"""
+    <a
+      phx-click="select_chat"
+      phx-value-chat_id={@chat.id}
+      phx-target={@myself}
+      class={[
+        "group relative flex w-full flex-col rounded-lg px-3 py-2 text-left focus:outline-none cursor-pointer",
+        if(@chat.id == @current_chat_id,
+          do: "bg-slate-200 dark:bg-slate-800",
+          else: "hover:bg-slate-100 dark:hover:bg-slate-880"
+        )
+      ]}
+    >
+      <.chat_title
+        :if={@chat.id != @editing_chat_id}
+        myself={@myself}
+        chat={@chat}
+        mask_class={[
+          "absolute inset-y-0 right-0 w-12 bg-gradient-to-l group-hover:from-65%",
+          if(@chat.id == @current_chat_id,
+            do:
+              "from-slate-200 group-hover:from-slate-200 dark:from-slate-800 dark:group-hover:from-slate-800",
+            else:
+              "from-slate-50 group-hover:from-slate-100 dark:from-slate-900 dark:group-hover:from-slate-880"
+          )
+        ]}
+      />
+      <.chat_editor :if={@chat.id == @editing_chat_id} myself={@myself} chat={@chat} />
+      <p class="text-xs text-slate-500 dark:text-slate-400">
+        <%= @chat.inserted_at %>
+      </p>
+    </a>
+    """
+  end
+
+  defp chat_title(assigns) do
+    ~H"""
+    <div class="w-full group">
+      <div class="text-ellipsis max-h-5 overflow-hidden break-all relative">
+        <h1 class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">
+          <%= @chat.title %>
+          <div class={@mask_class}></div>
+        </h1>
+      </div>
+    </div>
+    <div
+      phx-click="edit_chat"
+      phx-value-chat_id={@chat.id}
+      phx-target={@myself}
+      class="text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+    >
+      <div>
+        <.icon
+          name="hero-pencil-square"
+          class="hover:text-blue-600 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
+        />
+      </div>
+      <div phx-click={show_modal("delete-chat-modal-#{@chat.id}")}>
+        <.icon
+          name="hero-trash"
+          class="hover:text-red-600 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
+        />
+      </div>
+    </div>
+    """
+  end
+
+  defp chat_editor(assigns) do
+    ~H"""
+    <form
+      phx-submit="submit_edit_chat"
+      phx-click-away="cancel_edit_chat"
+      phx-target={@myself}
+      class="flex w-full pr-8"
+    >
+      <input
+        type="text"
+        name="value"
+        value={@chat.title}
+        phx-mounted={JS.focus()}
+        phx-target={@myself}
+        onclick="event.stopPropagation()"
+        onfocus="setSelectionRange(value.length, value.length); scrollLeft = scrollWidth"
+        onkeyup="if(event.key === 'Enter') event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}))"
+        class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200 border-none bg-transparent w-full p-0 m-0"
+      />
+      <input name="chat_id" value={@chat.id} hidden />
+      <div phx-click="cancel_edit_chat" phx-value-chat_id={@chat.id} phx-target={@myself}>
+        <.icon
+          name="hero-x-mark"
+          class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
+        />
+      </div>
+      <div onclick="event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); event.stopPropagation()">
+        <.icon
+          name="hero-check"
+          class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
+        />
+      </div>
+    </form>
     """
   end
 
