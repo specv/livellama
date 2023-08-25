@@ -8,7 +8,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
         <div class="flex items-center">
           <.logo count={length(@chats)} />
-          <.theme_toggle />
+          <.theme_toggle myself={@myself} themes={@themes} />
         </div>
         <.new_chat myself={@myself} />
         <.chats
@@ -179,21 +179,42 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
 
   defp theme_toggle(assigns) do
     ~H"""
-    <div>
+    <div phx-click-away={JS.add_class("hidden", to: "#themes")}>
       <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="pl-1">
-        <.icon name="hero-computer-desktop" class="w-5 h-5 text-blue-600" />
+        <.icon
+          :for={theme <- @themes}
+          :if={theme.active?}
+          name={theme.icon}
+          class={[
+            "w-5 h-5 text-blue-600",
+            if(theme.name == "light", do: "scale-110")
+          ]}
+        />
       </button>
-      <ul class="hidden absolute z-50 bg-white rounded-lg ring-1 ring-slate-900/10 shadow-lg overflow-hidden w-32 py-1 text-sm text-slate-700 font-semibold dark:bg-slate-800 dark:ring-0 dark:highlight-white/5 dark:text-slate-300 mt-2">
-        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30">
-          <.icon name="hero-sun" class="scale-110 w-5 h-5 mr-2 text-slate-400 dark:text-slate-500" />
-          Light
-        </li>
-        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30">
-          <.icon name="hero-moon" class="w-5 h-5 mr-2 text-slate-400 dark:text-slate-500" /> Dark
-        </li>
-        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30 text-blue-600">
-          <.icon name="hero-computer-desktop" class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-600" />
-          System
+      <ul
+        id="themes"
+        class="hidden absolute z-50 bg-white rounded-lg ring-1 ring-slate-900/10 shadow-lg overflow-hidden w-32 py-1 text-sm text-slate-700 font-semibold dark:bg-slate-800 dark:ring-0 dark:highlight-white/5 dark:text-slate-300 mt-2"
+      >
+        <li
+          :for={theme <- @themes}
+          phx-click={
+            JS.push("switch_theme", value: %{name: theme.name})
+            |> JS.add_class("hidden", to: "#themes")
+          }
+          phx-target={@myself}
+          class={[
+            "py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30",
+            if(theme.active?, do: "text-blue-600 dark:text-blue-600")
+          ]}
+        >
+          <.icon
+            name={theme.icon}
+            class={[
+              "w-5 h-5 mr-2 text-slate-400 dark:text-slate-500",
+              if(theme.active?, do: "text-blue-600 dark:text-blue-600"),
+              if(theme.name == "light", do: "scale-110")
+            ]}
+          /> <%= theme.text %>
         </li>
       </ul>
     </div>
@@ -304,6 +325,24 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     Chat.update!(%Chat{id: chat_id}, %{title: value})
 
     {:noreply, assign(socket, chats: Chat.list!(), editing_chat_id: nil)}
+  end
+
+  def handle_event("switch_theme", %{"name" => name}, socket) do
+    {:noreply,
+     socket
+     |> update(:themes, fn ts -> Enum.map(ts, &%{&1 | active?: &1.name == name}) end)
+     |> push_event("switch-theme", %{name: name})}
+  end
+
+  def mount(socket) do
+    {:ok,
+     assign(socket,
+       themes: [
+         %{name: "light", text: "Light", icon: "hero-sun", active?: false},
+         %{name: "dark", text: "Dark", icon: "hero-moon", active?: false},
+         %{name: "system", text: "System", icon: "hero-computer-desktop", active?: true}
+       ]
+     )}
   end
 
   def update(assigns, socket) do

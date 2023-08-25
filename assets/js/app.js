@@ -31,7 +31,7 @@ topbar.config({ barColors: { 0: "#29d" }, shadowColor: "rgba(0, 0, 0, .3)" })
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 window.addEventListener("phx:streaming-chunk-received", e => {
-  let container = document.querySelector('.messages');
+  let container = document.querySelector(".messages");
   let lastSuccessMessage = document.querySelector(".messages > div:last-child .success-message")
   let lastErrorMessage = document.querySelector(".messages > div:last-child .error-message")
   let atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight
@@ -41,6 +41,16 @@ window.addEventListener("phx:streaming-chunk-received", e => {
   if (atBottom) container.scrollTop = container.scrollHeight
 })
 window.addEventListener("scroll-to-bottom", e => e.target.scrollTop = e.target.scrollHeight)
+window.addEventListener("phx:switch-theme", e => switchTheme(e.detail.name, save = true))
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+  if (localStorage.theme === "system") e.matches ? switchTheme("dark") : switchTheme("light")
+})
+
+function switchTheme(theme, save = false) {
+  if (save) localStorage.theme = theme
+  document.documentElement.classList.toggle("dark", theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches || theme === "dark")
+}
+switchTheme(localStorage.theme || "system")
 
 Hooks.EnterSubmit = {
   mounted() {
@@ -65,7 +75,7 @@ Hooks.EnterSubmit = {
 
     // Prevent form submission when pasted content consists only of whitespace
     this.el.addEventListener("paste", e => {
-      if (e.clipboardData.getData('text').trim() === "") {
+      if (e.clipboardData.getData("text").trim() === "") {
         this.el.setCustomValidity(" ")
       }
       else {

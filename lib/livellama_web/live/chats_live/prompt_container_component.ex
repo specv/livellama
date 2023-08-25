@@ -80,7 +80,7 @@ defmodule LiveLlamaWeb.ChatsLive.PromptContainerComponent do
         <textarea
           id="input-message"
           name="input-message"
-          class="block w-full resize-none border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:invalid:ring-pink-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
+          class="block w-full resize-none border-none bg-slate-200 p-4 pl-10 pr-20 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:invalid:ring-pink-600 dark:focus:invalid:ring-pink-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-400 dark:focus:ring-blue-600 sm:text-base"
           placeholder="Enter your prompt"
           tabindex="0"
           rows="1"
