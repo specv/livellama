@@ -6,7 +6,10 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     ~H"""
     <aside class="flex">
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
-        <.logo count={length(@chats)} />
+        <div class="flex items-center">
+          <.logo count={length(@chats)} />
+          <.theme_toggle />
+        </div>
         <.new_chat myself={@myself} />
         <.chats
           myself={@myself}
@@ -131,7 +134,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         phx-target={@myself}
         onclick="event.stopPropagation()"
         onfocus="setSelectionRange(value.length, value.length); scrollLeft = scrollWidth"
-        onkeyup="if(event.key === 'Enter') event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}))"
+        onkeyup="if(event.key === 'Enter') closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}))"
         class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200 border-none bg-transparent w-full p-0 m-0"
       />
       <input name="chat_id" value={@chat.id} hidden />
@@ -141,7 +144,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
           class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-6 h-4 w-4"
         />
       </div>
-      <div onclick="event.target.closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); event.stopPropagation()">
+      <div onclick="closest('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true})); event.stopPropagation()">
         <.icon
           name="hero-check"
           class="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white hover:scale-110 absolute top-1/2 transform -translate-y-1/2 right-1 h-4 w-4"
@@ -153,7 +156,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
 
   defp logo(assigns) do
     ~H"""
-    <div class="flex px-4">
+    <div class="flex pl-4">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         class="h-7 w-7 text-blue-600"
@@ -164,12 +167,35 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         <path d="M20.553 3.105l-6 3C11.225 7.77 9.274 9.953 8.755 12.6c-.738 3.751 1.992 7.958 2.861 8.321A.985.985 0 0012 21c6.682 0 11-3.532 11-9 0-6.691-.9-8.318-1.293-8.707a1 1 0 00-1.154-.188zm-7.6 15.86a8.594 8.594 0 015.44-8.046 1 1 0 10-.788-1.838 10.363 10.363 0 00-6.393 7.667 6.59 6.59 0 01-.494-3.777c.4-2 1.989-3.706 4.728-5.076l5.03-2.515A29.2 29.2 0 0121 12c0 4.063-3.06 6.67-8.046 6.965zM3.523 5.38A29.2 29.2 0 003 12a6.386 6.386 0 004.366 6.212 1 1 0 11-.732 1.861A8.377 8.377 0 011 12c0-6.691.9-8.318 1.293-8.707a1 1 0 011.154-.188l6 3A1 1 0 018.553 7.9z">
         </path>
       </svg>
-      <h2 class="px-5 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 class="pl-5 text-lg font-medium text-slate-800 dark:text-slate-200">
         Chats
-        <span class="mx-2 rounded-full bg-blue-600 px-2 py-1 text-xs text-slate-200">
+        <span class="mx-2 rounded-full bg-blue-600 px-2 py-1 text-xs text-slate-300 inline-block scale-[.85]">
           <%= @count %>
         </span>
       </h2>
+    </div>
+    """
+  end
+
+  defp theme_toggle(assigns) do
+    ~H"""
+    <div>
+      <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="pl-1">
+        <.icon name="hero-computer-desktop" class="w-5 h-5 text-blue-600" />
+      </button>
+      <ul class="hidden absolute z-50 bg-white rounded-lg ring-1 ring-slate-900/10 shadow-lg overflow-hidden w-32 py-1 text-sm text-slate-700 font-semibold dark:bg-slate-800 dark:ring-0 dark:highlight-white/5 dark:text-slate-300 mt-2">
+        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30">
+          <.icon name="hero-sun" class="scale-110 w-5 h-5 mr-2 text-slate-400 dark:text-slate-500" />
+          Light
+        </li>
+        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30">
+          <.icon name="hero-moon" class="w-5 h-5 mr-2 text-slate-400 dark:text-slate-500" /> Dark
+        </li>
+        <li class="py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30 text-blue-600">
+          <.icon name="hero-computer-desktop" class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-600" />
+          System
+        </li>
+      </ul>
     </div>
     """
   end
