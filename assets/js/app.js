@@ -41,16 +41,6 @@ window.addEventListener("phx:streaming-chunk-received", e => {
   if (atBottom) container.scrollTop = container.scrollHeight
 })
 window.addEventListener("scroll-to-bottom", e => e.target.scrollTop = e.target.scrollHeight)
-window.addEventListener("phx:switch-theme", e => switchTheme(e.detail.name, save = true))
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
-  if (localStorage.theme === "system") e.matches ? switchTheme("dark") : switchTheme("light")
-})
-
-function switchTheme(theme, save = false) {
-  if (save) localStorage.theme = theme
-  document.documentElement.classList.toggle("dark", theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches || theme === "dark")
-}
-switchTheme(localStorage.theme || "system")
 
 Hooks.EnterSubmit = {
   mounted() {
@@ -82,6 +72,22 @@ Hooks.EnterSubmit = {
         this.el.setCustomValidity("")
       }
     })
+  }
+}
+
+Hooks.SwitchTheme = {
+  mounted() {
+    this.update(localStorage.theme || "system")
+    window.addEventListener("switch-theme", e => this.update(e.detail.name, true))
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
+      if (localStorage.theme === "system") e.matches ? this.update("dark") : this.update("light")
+    })
+  },
+  update(theme, save = false) {
+    if (save) localStorage.theme = theme
+    const isDark = theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches || theme === "dark"
+    document.documentElement.classList.toggle("dark", isDark)
+    this.pushEventTo(this.el, "switch_theme", { selected: localStorage.theme, current: isDark ? "dark" : "light" })
   }
 }
 

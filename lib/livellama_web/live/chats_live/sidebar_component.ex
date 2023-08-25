@@ -2,13 +2,24 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   use LiveLlamaWeb, :live_component
   alias LiveLlama.Chats.Chat
 
+  @themes [
+    %{name: "light", text: "Light", icon: "hero-sun"},
+    %{name: "dark", text: "Dark", icon: "hero-moon"},
+    %{name: "system", text: "System", icon: "hero-computer-desktop"}
+  ]
+
   def render(assigns) do
     ~H"""
     <aside class="flex">
       <div class="flex h-[100svh] w-60 flex-col overflow-y-auto bg-slate-50 pt-8 dark:border-slate-700 dark:bg-slate-900 sm:h-[100vh] sm:w-64">
         <div class="flex items-center">
           <.logo count={length(@chats)} />
-          <.theme_toggle myself={@myself} themes={@themes} />
+          <.theme_switcher
+            myself={@myself}
+            themes={@themes}
+            selected_theme={@selected_theme}
+            current_theme={@current_theme}
+          />
         </div>
         <.new_chat myself={@myself} />
         <.chats
@@ -177,41 +188,46 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     """
   end
 
-  defp theme_toggle(assigns) do
+  defp theme_switcher(assigns) do
     ~H"""
     <div phx-click-away={JS.add_class("hidden", to: "#themes")}>
       <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="pl-1">
         <.icon
           :for={theme <- @themes}
-          :if={theme.active?}
+          :if={theme.name == @current_theme}
           name={theme.icon}
           class={[
-            "w-5 h-5 text-blue-600",
-            if(theme.name == "light", do: "scale-110")
+            "w-5 h-5",
+            if(theme.name == "light", do: "scale-110"),
+            if(@selected_theme == "system",
+              do: "text-slate-800 dark:text-slate-200",
+              else: "text-blue-600"
+            )
           ]}
         />
       </button>
       <ul
         id="themes"
+        phx-hook="SwitchTheme"
         class="hidden absolute z-50 bg-white rounded-lg ring-1 ring-slate-900/10 shadow-lg overflow-hidden w-32 py-1 text-sm text-slate-700 font-semibold dark:bg-slate-800 dark:ring-0 dark:highlight-white/5 dark:text-slate-300 mt-2"
       >
         <li
           :for={theme <- @themes}
           phx-click={
-            JS.push("switch_theme", value: %{name: theme.name})
+            JS.dispatch("switch-theme", detail: %{name: theme.name})
             |> JS.add_class("hidden", to: "#themes")
           }
           phx-target={@myself}
           class={[
             "py-1 px-2 flex items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-600/30",
-            if(theme.active?, do: "text-blue-600 dark:text-blue-600")
+            if(theme.name == @selected_theme, do: "text-blue-600 dark:text-blue-600")
           ]}
         >
           <.icon
             name={theme.icon}
             class={[
               "w-5 h-5 mr-2 text-slate-400 dark:text-slate-500",
-              if(theme.active?, do: "text-blue-600 dark:text-blue-600"),
+              if(theme.name == @selected_theme, do: "text-blue-600 dark:text-blue-600"),
               if(theme.name == "light", do: "scale-110")
             ]}
           /> <%= theme.text %>
@@ -327,22 +343,12 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
     {:noreply, assign(socket, chats: Chat.list!(), editing_chat_id: nil)}
   end
 
-  def handle_event("switch_theme", %{"name" => name}, socket) do
-    {:noreply,
-     socket
-     |> update(:themes, fn ts -> Enum.map(ts, &%{&1 | active?: &1.name == name}) end)
-     |> push_event("switch-theme", %{name: name})}
+  def handle_event("switch_theme", %{"selected" => selected, "current" => current}, socket) do
+    {:noreply, assign(socket, selected_theme: selected, current_theme: current)}
   end
 
   def mount(socket) do
-    {:ok,
-     assign(socket,
-       themes: [
-         %{name: "light", text: "Light", icon: "hero-sun", active?: false},
-         %{name: "dark", text: "Dark", icon: "hero-moon", active?: false},
-         %{name: "system", text: "System", icon: "hero-computer-desktop", active?: true}
-       ]
-     )}
+    {:ok, assign(socket, themes: @themes, selected_theme: "system", current_theme: "light")}
   end
 
   def update(assigns, socket) do
