@@ -78,6 +78,7 @@ Hooks.EnterSubmit = {
 Hooks.SwitchTheme = {
   mounted() {
     this.update(localStorage.theme || "system")
+
     window.addEventListener("switch-theme", e => this.update(e.detail.name, true))
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", e => {
       if (localStorage.theme === "system") e.matches ? this.update("dark") : this.update("light")
@@ -85,9 +86,7 @@ Hooks.SwitchTheme = {
   },
   update(theme, save = false) {
     if (save) localStorage.theme = theme
-    const isDark = theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches || theme === "dark"
-    document.documentElement.classList.toggle("dark", isDark)
-    this.pushEventTo(this.el, "switch_theme", { selected: localStorage.theme, current: isDark ? "dark" : "light" })
+    this.pushEventTo(this.el, "switch_theme", { selected: localStorage.theme || theme, current: setTheme(theme) })
   }
 }
 

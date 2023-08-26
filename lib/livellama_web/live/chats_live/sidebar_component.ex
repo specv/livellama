@@ -197,7 +197,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
           :if={theme.name == @current_theme}
           name={theme.icon}
           class={[
-            "w-5 h-5",
+            "w-5 h-5 transition-all duration-1000",
             if(theme.name == "light", do: "scale-110"),
             if(@selected_theme == "system",
               do: "text-slate-800 dark:text-slate-200",
@@ -226,8 +226,11 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
           <.icon
             name={theme.icon}
             class={[
-              "w-5 h-5 mr-2 text-slate-400 dark:text-slate-500",
-              if(theme.name == @selected_theme, do: "text-blue-600 dark:text-blue-600"),
+              "w-5 h-5 mr-2",
+              if(theme.name == @selected_theme,
+                do: "text-blue-600 dark:text-blue-600",
+                else: "text-slate-400 dark:text-slate-500"
+              ),
               if(theme.name == "light", do: "scale-110")
             ]}
           /> <%= theme.text %>
@@ -286,7 +289,10 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         </svg>
         User
       </button>
-      <button class="flex w-full gap-x-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800">
+      <button
+        phx-click={JS.transition("animate-bounce")}
+        class="flex w-full gap-x-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-200 focus:outline-none dark:text-slate-200 dark:hover:bg-slate-800"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6"
@@ -348,7 +354,7 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
   end
 
   def mount(socket) do
-    {:ok, assign(socket, themes: @themes, selected_theme: "system", current_theme: "light")}
+    {:ok, assign(socket, themes: @themes, selected_theme: nil, current_theme: "light")}
   end
 
   def update(assigns, socket) do
