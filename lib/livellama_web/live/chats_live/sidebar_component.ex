@@ -196,14 +196,16 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
           :for={theme <- @themes}
           :if={theme.name == @current_theme}
           name={theme.icon}
-          class={[
-            "w-5 h-5 transition-all duration-1000",
-            if(theme.name == "light", do: "scale-110"),
-            if(@selected_theme == "system",
-              do: "text-slate-800 dark:text-slate-200",
-              else: "text-blue-600"
-            )
-          ]}
+          class={
+            to_string([
+              "w-5 h-5 transition-all duration-1000",
+              if(theme.name == "light", do: "scale-110", else: ""),
+              if(@selected_theme == "system",
+                do: "text-slate-800 dark:text-slate-200",
+                else: "text-blue-600"
+              )
+            ])
+          }
         />
       </button>
       <ul
@@ -225,14 +227,16 @@ defmodule LiveLlamaWeb.ChatsLive.SidebarComponent do
         >
           <.icon
             name={theme.icon}
-            class={[
-              "w-5 h-5 mr-2",
-              if(theme.name == @selected_theme,
-                do: "text-blue-600 dark:text-blue-600",
-                else: "text-slate-400 dark:text-slate-500"
-              ),
-              if(theme.name == "light", do: "scale-110")
-            ]}
+            class={
+              to_string([
+                "w-5 h-5 mr-2",
+                if(theme.name == @selected_theme,
+                  do: "text-blue-600 dark:text-blue-600",
+                  else: "text-slate-400 dark:text-slate-500"
+                ),
+                if(theme.name == "light", do: "scale-110", else: "")
+              ])
+            }
           /> <%= theme.text %>
         </li>
       </ul>
