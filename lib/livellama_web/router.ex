@@ -1,5 +1,6 @@
 defmodule LiveLlamaWeb.Router do
   use LiveLlamaWeb, :router
+  import PhoenixStorybook.Router
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -14,6 +15,10 @@ defmodule LiveLlamaWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/" do
+    storybook_assets()
+  end
+
   scope "/", LiveLlamaWeb do
     pipe_through :browser
 
@@ -23,6 +28,8 @@ defmodule LiveLlamaWeb.Router do
       live "/chats", ChatsLive, :index
       live "/chats/:chat_id", ChatsLive, :chat
     end
+
+    live_storybook("/storybook", backend_module: LiveLlamaWeb.Storybook)
   end
 
   # Other scopes may use custom stacks.

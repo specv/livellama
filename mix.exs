@@ -51,7 +51,8 @@ defmodule LiveLlama.MixProject do
       {:req, "~> 0.3.0"},
       {:ash, "~> 2.14.1"},
       {:ash_postgres, "~> 1.3.6"},
-      {:ash_archival, "~> 0.1.4"}
+      {:ash_archival, "~> 0.1.4"},
+      {:phoenix_storybook, "~> 0.5.0"}
     ]
   end
 
@@ -66,7 +67,12 @@ defmodule LiveLlama.MixProject do
       setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
-      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
+      "assets.deploy": [
+        "tailwind default --minify",
+        "tailwind storybook --minify",
+        "esbuild default --minify",
+        "phx.digest"
+      ]
     ]
   end
 end

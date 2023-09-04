@@ -25,7 +25,8 @@ config :livellama, LiveLlamaWeb.Endpoint,
   secret_key_base: "enXUDtdArbteeclb2aPryzi+1NBy3SfOc0UhgiVxmhOjHn3enMFiVeOFbNmrAKQF",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]},
+    storybook_tailwind: {Tailwind, :install_and_run, [:storybook, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -58,7 +59,8 @@ config :livellama, LiveLlamaWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/livellama_web/(controllers|live|components)/.*(ex|heex)$",
-      ~r"lib/livellama/.*(ex)$"
+      ~r"lib/livellama/.*(ex)$",
+      ~r"storybook/.*(exs)$"
     ]
   ]
 
